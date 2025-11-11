@@ -1,6 +1,6 @@
 import cv2
 from collections.abc import Callable
-from typing import Any
+import numpy as np
 
 
 def start_capture_loop(
@@ -35,9 +35,25 @@ def start_capture_loop(
     cv2.destroyAllWindows()
 
 
+class MotionDetector:
+    fgbg = cv2.createBackgroundSubtractorMOG2(
+        history=300, varThreshold=25, detectShadows=True
+    )
+
+    def detect_motion(frame: cv2.typing.MatLike) -> bool:
+        fgmask = MotionDetector.fgbg.apply(frame)
+        motion = np.sum(fgmask > 0) > 5000  # Could be tuned
+        return motion
+
+
 def process_frame(frame: cv2.typing.MatLike) -> cv2.typing.MatLike:
     # Example processing: convert to grayscale
     gray_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+
+    motion = MotionDetector.detect_motion(frame)
+    if motion:
+        # Don't move the robot arm if motion is detected
+        pass
 
     # here we could have something like read_board(frame), detect_hand(frame), etc. etc.
     # then based on that we could take moves with the robot arm
