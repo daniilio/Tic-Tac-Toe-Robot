@@ -1,3 +1,5 @@
+from enum import Enum
+import argparse
 import cv2
 import numpy as np
 import time
@@ -26,26 +28,116 @@ class MotionDetector:
         return time.time() - self.last_motion_time
 
 
+class BoardReader:
+    def read_board(self, frame: cv2.typing.MatLike):
+        squares = self.find_squares(frame)
+        self.visualize_squares(frame, squares)
+
+    def visualize_squares(self, frame: cv2.typing.MatLike, squares):
+        empty_board = np.zeros_like(frame)
+        for i, sq in enumerate(squares):
+            # draw squares with the data from frame onto the empty_board for visualization
+            x, y, w, h = cv2.boundingRect(sq)
+            empty_board[y : y + h, x : x + w] = frame[y : y + h, x : x + w]
+            cv2.putText(
+                empty_board,
+                str(i),
+                (x + 10, y + 30),
+                cv2.FONT_HERSHEY_SIMPLEX,
+                1,
+                (0, 0, 0),
+                2,
+            )
+        cv2.imshow("Board Detection", empty_board)
+
+    def find_squares(self, frame: cv2.typing.MatLike):
+        imgray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+        ret, thresh = cv2.threshold(imgray, 127, 255, 0)
+        if not ret:
+            raise ValueError("Thresholding failed")
+        contours, _ = cv2.findContours(thresh, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+
+        squares = []
+        for contour in contours:
+            epsilon = 0.01 * cv2.arcLength(contour, True)
+            approx = cv2.approxPolyDP(contour, epsilon, True)
+
+            # We are looking for rectangles
+            if len(approx) != 4:
+                continue
+
+            area = cv2.contourArea(approx)
+            aspect_ratio = float(
+                cv2.boundingRect(approx)[2] / cv2.boundingRect(approx)[3]
+            )
+            # We are looking for squares of reasonable size
+            if 0.9 < aspect_ratio < 1.1 and area > 100:
+                squares.append(approx)
+
+        # We now have all squares, but we need to filter them to find the 9 board squares
+        # We assume the board squares will have similar areas, so we are looking for
+        # 9 squares with the least std deviation in area
+        if len(squares) < 9:
+            print("Not enough squares detected")
+            return []
+
+        square_areas = [cv2.contourArea(sq) for sq in squares]
+        squares_with_areas = sorted(zip(squares, square_areas), key=lambda x: x[1])
+        squares = [sq for sq, _ in squares_with_areas]
+        sorted_areas = [area for _, area in squares_with_areas]
+        start_idx = self.find_least_std_dev_of_9(sorted_areas)
+        board_squares = squares[start_idx : start_idx + 9]
+
+        # Sort board squares by their position (top-left to bottom-right)
+        # We divide y by 300 to "group" by rows i.e. we don't want y to be
+        # sensitive to small variations within a row
+        def sort_key(sq):
+            x, y = cv2.boundingRect(sq)[:2]
+            return (y // 300) * 1000 + x
+
+        board_squares = sorted(board_squares, key=sort_key)
+
+        return board_squares
+
+    def find_least_std_dev_of_9(self, values):
+        # this could be O(n), but n is small so whatever
+        min_std_dev = float("inf")
+        best_start_index = 0
+        for i in range(len(values) - 8):
+            window = values[i : i + 9]
+            std_dev = np.std(window)
+            if std_dev < min_std_dev:
+                min_std_dev = std_dev
+                best_start_index = i
+        return best_start_index
+
+
+class FrameSource(Enum):
+    CAM = 1
+    IP_CAM = 2
+    IMG = 3
+
+
 class RobotController:
-    def __init__(self):
+    def __init__(self, camera_index=0, ip_camera_url=None, image_path=None):
         self.state = State()
         self.motion_detector = MotionDetector()
+        self.board_reader = BoardReader()
+        if image_path is not None:
+            self.frame_source = FrameSource.IMG
+            self.image_path = image_path
+        elif ip_camera_url is not None:
+            self.frame_source = FrameSource.IP_CAM
+            self.ip_camera_url = ip_camera_url
+        else:
+            self.frame_source = FrameSource.CAM
+            self.camera_index = camera_index
 
     def start_capture_loop(self):
-        cap = cv2.VideoCapture(0)  # For other cameras, change the index to 1, 2, etc.
-        # cap = cv2.VideoCapture("rtsp://your_ip_camera_url") # Example for IP camera
-
-        if not cap.isOpened():
-            print("Error: Could not open video.")
-            return
+        self.init_capture()
 
         while True:
-            # Capture frame-by-frame
-            ret, frame = cap.read()
-            if not ret:
-                print("Error: Could not read frame.")
-                break
-
+            frame = self.get_frame()
             frame = self.process_frame(frame)
 
             # Display the resulting frame
@@ -58,8 +150,38 @@ class RobotController:
                 break
 
         # Release the capture and close windows
-        cap.release()
+        self.destroy_capture()
         cv2.destroyAllWindows()
+
+    def init_capture(self):
+        if self.frame_source == FrameSource.CAM:
+            self.cap = cv2.VideoCapture(self.camera_index)
+        elif self.frame_source == FrameSource.IP_CAM:
+            self.cap = cv2.VideoCapture(self.ip_camera_url)
+        elif self.frame_source == FrameSource.IMG:
+            self.image = cv2.imread(self.image_path)
+
+        if self.frame_source in (FrameSource.CAM, FrameSource.IP_CAM):
+            if not self.cap.isOpened():
+                raise ValueError("Error: Could not open video source.")
+
+    def destroy_capture(self):
+        if self.frame_source in (FrameSource.CAM, FrameSource.IP_CAM):
+            self.cap.release()
+
+    def get_frame(self):
+        if self.frame_source == FrameSource.CAM:
+            ret, frame = self.cap.read()
+            if not ret:
+                raise ValueError("Error: Could not read frame from camera.")
+            return frame
+        elif self.frame_source == FrameSource.IP_CAM:
+            ret, frame = self.cap.read()
+            if not ret:
+                raise ValueError("Error: Could not read frame from IP camera.")
+            return frame
+        elif self.frame_source == FrameSource.IMG:
+            return self.image.copy()
 
     def process_frame(self, frame: cv2.typing.MatLike) -> cv2.typing.MatLike:
         # Example processing: convert to grayscale
@@ -70,6 +192,8 @@ class RobotController:
         self.state.detected_motion = (
             self.motion_detector.time_since_last_motion() < 1.0
         )  # 1 second threshold
+
+        self.board_reader.read_board(frame)
 
         # here we could have something like read_board(frame), detect_hand(frame), etc. etc.
         # then based on that we could take moves with the robot arm
@@ -85,5 +209,36 @@ class RobotController:
 
 
 if __name__ == "__main__":
-    robot_controller = RobotController()
-    robot_controller.start_capture_loop()
+    parser = argparse.ArgumentParser(
+        prog="Tic-Tac-Toe Robot Controller",
+    )
+    parser.add_argument(
+        "--camera-index",
+        type=int,
+        default=0,
+        help="Index of the camera to use (default: 0)",
+    )
+    parser.add_argument(
+        "--ip-camera-url",
+        type=str,
+        default=None,
+        help="URL of the IP camera to use (default: None)",
+    )
+    parser.add_argument(
+        "--image-path",
+        type=str,
+        default=None,
+        help="Path to an image file to use instead of a video source (default: None)",
+    )
+    args = parser.parse_args()
+
+    # Example usage
+    # python3 app.py --image-path board_images/filled.png
+    # or just the following to use the default camera
+    # python3 app.py
+    controller = RobotController(
+        camera_index=args.camera_index,
+        ip_camera_url=args.ip_camera_url,
+        image_path=args.image_path,
+    )
+    controller.start_capture_loop()
