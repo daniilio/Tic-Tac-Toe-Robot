@@ -29,9 +29,15 @@ class MotionDetector:
 
 
 class BoardReader:
+    class Marks(Enum):
+        X = 1
+        O = 2
+        EMPTY = 3
+
     def read_board(self, frame: cv2.typing.MatLike):
         squares = self.find_squares(frame)
         self.visualize_squares(frame, squares)
+        print(self.detect_marks(frame, squares))
 
     def visualize_squares(self, frame: cv2.typing.MatLike, squares):
         empty_board = np.zeros_like(frame)
@@ -67,9 +73,8 @@ class BoardReader:
                 continue
 
             area = cv2.contourArea(approx)
-            aspect_ratio = float(
-                cv2.boundingRect(approx)[2] / cv2.boundingRect(approx)[3]
-            )
+            bbox = cv2.boundingRect(approx)
+            aspect_ratio = float(bbox[2] / bbox[3])
             # We are looking for squares of reasonable size
             if 0.9 < aspect_ratio < 1.1 and area > 100:
                 squares.append(approx)
@@ -110,6 +115,37 @@ class BoardReader:
                 min_std_dev = std_dev
                 best_start_index = i
         return best_start_index
+
+    def detect_marks(self, frame: cv2.typing.MatLike, squares):
+        gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+        _, thresh = cv2.threshold(gray, 127, 255, 1)
+
+        marks = []
+        for sq in squares:
+            x, y, w, h = cv2.boundingRect(sq)
+            cell = thresh[y : y + h, x : x + w]
+
+            contours, _ = cv2.findContours(
+                cell, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE
+            )
+            if len(contours) == 0:
+                marks.append(self.Marks.EMPTY)
+                continue
+
+            # Pick the largest contour (likely the X or O)
+            c = max(contours, key=cv2.contourArea)
+            cv2.drawContours(cell, [c], -1, (0, 255, 0), 2)
+
+            area = cv2.contourArea(c)
+            perimeter = cv2.arcLength(c, True)
+            circularity = 4 * np.pi * area / (perimeter**2)
+            if area < 100:
+                marks.append(self.Marks.EMPTY)
+            elif circularity > 0.5:
+                marks.append(self.Marks.O)
+            else:
+                marks.append(self.Marks.X)
+        return marks
 
 
 class FrameSource(Enum):
