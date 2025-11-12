@@ -65,7 +65,7 @@ class BoardReader:
 
         squares = []
         for contour in contours:
-            epsilon = 0.01 * cv2.arcLength(contour, True)
+            epsilon = 0.02 * cv2.arcLength(contour, True)
             approx = cv2.approxPolyDP(contour, epsilon, True)
 
             # We are looking for rectangles
@@ -76,7 +76,7 @@ class BoardReader:
             bbox = cv2.boundingRect(approx)
             aspect_ratio = float(bbox[2] / bbox[3])
             # We are looking for squares of reasonable size
-            if 0.9 < aspect_ratio < 1.1 and area > 100:
+            if 0.8 < aspect_ratio < 1.2 and area > 100:
                 squares.append(approx)
 
         # We now have all squares, but we need to filter them to find the 9 board squares
@@ -123,28 +123,36 @@ class BoardReader:
         marks = []
         for sq in squares:
             x, y, w, h = cv2.boundingRect(sq)
+            w = int(w * 0.8)
+            h = int(h * 0.8)
             cell = thresh[y : y + h, x : x + w]
 
-            contours, _ = cv2.findContours(
-                cell, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE
-            )
-            if len(contours) == 0:
+            non_zero_count = cv2.countNonZero(cell)
+            total_pixels = cell.size
+            fill_ratio = non_zero_count / total_pixels
+            if fill_ratio < 0.1:
                 marks.append(self.Marks.EMPTY)
-                continue
-
-            # Pick the largest contour (likely the X or O)
-            c = max(contours, key=cv2.contourArea)
-            cv2.drawContours(cell, [c], -1, (0, 255, 0), 2)
-
-            area = cv2.contourArea(c)
-            perimeter = cv2.arcLength(c, True)
-            circularity = 4 * np.pi * area / (perimeter**2)
-            if area < 100:
-                marks.append(self.Marks.EMPTY)
-            elif circularity > 0.5:
-                marks.append(self.Marks.O)
             else:
-                marks.append(self.Marks.X)
+                # Run a hough circle detection to see if there's an O
+                circles = cv2.HoughCircles(
+                    cell,
+                    cv2.HOUGH_GRADIENT,
+                    dp=1,
+                    minDist=20,
+                    param1=50,
+                    param2=15,
+                    minRadius=50,
+                )
+                if circles is not None:
+                    marks.append(self.Marks.O)
+                    # draw detected circles for visualization
+                    circles = np.uint16(np.around(circles))
+                    for i in circles[0,:]:
+                        cv2.circle(cell,(i[0],i[1]),i[2],(0,255,0),2)
+                else:
+                    marks.append(self.Marks.X)
+
+        cv2.imshow("Cell Contours", thresh)
         return marks
 
 
@@ -230,9 +238,6 @@ class RobotController:
         )  # 1 second threshold
 
         self.board_reader.read_board(frame)
-
-        # here we could have something like read_board(frame), detect_hand(frame), etc. etc.
-        # then based on that we could take moves with the robot arm
 
         return gray_frame
 
