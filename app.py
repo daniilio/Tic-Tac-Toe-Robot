@@ -37,7 +37,18 @@ class BoardReader:
     def read_board(self, frame: cv2.typing.MatLike):
         squares = self.find_squares(frame)
         self.visualize_squares(frame, squares)
-        print(self.detect_marks(frame, squares))
+        marks = self.detect_marks(frame, squares)
+        # print marks as a grid
+        self.print_board(marks)
+
+    def print_board(self, marks):
+        if not marks:
+            return
+        print("Detected Board:")
+        root = len(marks) ** 0.5
+        for i in range(int(root)):
+            row = marks[i * int(root) : (i + 1) * int(root)]
+            print(" | ".join(mark.name for mark in row))
 
     def visualize_squares(self, frame: cv2.typing.MatLike, squares):
         empty_board = np.zeros_like(frame)
@@ -94,11 +105,11 @@ class BoardReader:
         board_squares = squares[start_idx : start_idx + 9]
 
         # Sort board squares by their position (top-left to bottom-right)
-        # We divide y by 300 to "group" by rows i.e. we don't want y to be
+        # We divide y by 100 to "group" by rows i.e. we don't want y to be
         # sensitive to small variations within a row
         def sort_key(sq):
             x, y = cv2.boundingRect(sq)[:2]
-            return (y // 300) * 1000 + x
+            return (y // 100) * 1000 + x
 
         board_squares = sorted(board_squares, key=sort_key)
 
@@ -122,15 +133,18 @@ class BoardReader:
 
         marks = []
         for sq in squares:
+            mask = np.zeros((thresh.shape), dtype=np.uint8)
+            cv2.fillPoly(mask, [sq], 255)
+            cell = cv2.bitwise_and(thresh, thresh, mask=mask)
             x, y, w, h = cv2.boundingRect(sq)
-            w = int(w * 0.8)
-            h = int(h * 0.8)
-            cell = thresh[y : y + h, x : x + w]
+            w = int(0.9 * w)
+            h = int(0.9 * h)
+            cell = cell[y : y + h, x : x + w]
 
             non_zero_count = cv2.countNonZero(cell)
             total_pixels = cell.size
             fill_ratio = non_zero_count / total_pixels
-            if fill_ratio < 0.1:
+            if fill_ratio < 0.015:
                 marks.append(self.Marks.EMPTY)
             else:
                 # Run a hough circle detection to see if there's an O
@@ -147,12 +161,11 @@ class BoardReader:
                     marks.append(self.Marks.O)
                     # draw detected circles for visualization
                     circles = np.uint16(np.around(circles))
-                    for i in circles[0,:]:
-                        cv2.circle(cell,(i[0],i[1]),i[2],(0,255,0),2)
+                    for i in circles[0, :]:
+                        cv2.circle(cell, (i[0], i[1]), i[2], (0, 255, 0), 2)
                 else:
                     marks.append(self.Marks.X)
 
-        cv2.imshow("Cell Contours", thresh)
         return marks
 
 
