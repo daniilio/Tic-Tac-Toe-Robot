@@ -22,37 +22,65 @@ def test_targets(se3_start):
 
 def board(se3_start):
     se3_targets = []
-    side_length = 0.6
+    side_length = 0.2
+    descent = 0.35
 
     # Start at current pose
     se3_target = se3_start
 
-    SOME_NUMBER = -0.35 # Tune this once we have the marker on the gripper
+    def lift(pos):
+        return SE3.Tz(0.02) * pos
+    
+    def place(pos):
+        return SE3.Tz(-0.02) * pos
+    
+    def ua(t):
+        """ Short for "update and append"
+        """
+        nonlocal se3_target
+        se3_target = t
+        se3_targets.append(se3_target)
 
-    # Move inward a bit (so the panda doesnt collide with itself)
-    se3_target = SE3.Ty(0.35) * se3_target
-    se3_targets.append(se3_target)
-    se3_target = SE3.Tx(0.15) * se3_target
-    se3_targets.append(se3_target)
 
     # Move down (get close to the table)
-    se3_target = SE3.Tz(SOME_NUMBER) * se3_target
-    se3_targets.append(se3_target)
+    ua(SE3.Tz(-descent) * SE3.Tx(side_length/2) * SE3.Ty(side_length/2) * se3_target)
 
-    # Move along -Y
-    se3_target = SE3.Ty(-side_length) * se3_target
-    se3_targets.append(se3_target)
+    # --- Draw outer square ---
+    ua(SE3.Ty(-side_length) * se3_target)  # bottom edge
+    ua(SE3.Tx(-side_length) * se3_target)  # left edge
+    ua(SE3.Ty(side_length) * se3_target)   # top edge
+    ua(SE3.Tx(side_length) * se3_target)   # right edge (close square)
+    ua(lift(se3_target))
 
-    # Move along -X
-    se3_target = SE3.Tx(-side_length) * se3_target
-    se3_targets.append(se3_target)
+    # --- Draw inner grid lines (4 lines total) ---
 
-    # Move along +Y
-    se3_target = SE3.Ty(side_length) * se3_target
-    se3_targets.append(se3_target)
+    # Start first vertical
+    ua(SE3.Tx(-side_length / 3) * se3_target)
+    ua(place(se3_target))
+    ua(SE3.Ty(-side_length) * se3_target)
+    ua(lift(se3_target))
+    # End first vertical
 
-    # Move along +X to close the square
-    se3_target = SE3.Tx(side_length) * se3_target
-    se3_targets.append(se3_target)
+    # Start second vertical
+    ua(SE3.Tx(-side_length / 3) * se3_target)
+    ua(place(se3_target))
+    ua(SE3.Ty(side_length) * se3_target)
+    ua(lift(se3_target))
+    # End second vertical
+
+    # Begin first horizontal
+    ua(SE3.Tx(-side_length / 3) * SE3.Ty(-side_length / 3) * se3_target)
+    ua(place(se3_target))
+    ua(SE3.Tx(side_length) * se3_target)
+    ua(lift(se3_target))
+    # End first horizontal
+
+    # Begin second horizontal
+    ua(SE3.Ty(-side_length / 3) * se3_target)
+    ua(place(se3_target))
+    ua(SE3.Tx(-side_length) * se3_target)
+    ua(lift(se3_target))
+
+    se3_targets.append(se3_start)
 
     return se3_targets
