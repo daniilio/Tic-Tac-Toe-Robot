@@ -2,34 +2,29 @@ import roboticstoolbox as rtb
 import time
 import sys
 import pickle
+import numpy as np
 
 from franka_api.motion_generator import RuckigMotionGenerator
-import numpy as np
+from franka_api.visualizer import RtbVisualizer
 import targets
 
-def new_robot(is_simulation=True):
-    np.set_printoptions(precision=4, suppress=True,)    
+np.set_printoptions(precision=4, suppress=True,)  
 
+def new_robot():
     panda_rtb_model = rtb.models.Panda()
-
-    if is_simulation:
-        from franka_api.visualizer import RtbVisualizer
-        robot = RtbVisualizer(panda_rtb_model, panda_rtb_model.qr)
-    else:
-        import csc376_bind_franky
-        robot = csc376_bind_franky.FrankaJointTrajectoryController("192.168.1.107")
-        robot.setupSignalHandler()
-        q_start = robot.get_current_joint_positions()
+    
+    q_start = panda_rtb_model.qr
+    robot = RtbVisualizer(panda_rtb_model, q_start)
 
     return robot, panda_rtb_model
 
 
-def make_trajectories(funcs, factors):
+def make_trajectories_and_run(robot: RtbVisualizer, funcs, factors, save=True):
     motion_generator = RuckigMotionGenerator()
     
-    q_start = rtb_model.qr
+    q_start = robot.rtb_robot_model.q
     se3_start = rtb_model.fkine(q_start)
-
+    
     for i, func in enumerate(funcs):
         start_time = time.time()
         q_trajs = []
@@ -48,24 +43,22 @@ def make_trajectories(funcs, factors):
         end_time = time.time()
 
         print(f"Took {end_time - start_time} seconds to compute trajectories.")
-        yes_or_else = input("Save trajectories? (Y)\n")
-        if (yes_or_else == "Y"):
-            filename = input("Enter a filename.\n")
-            with open(f"trajectories/{filename}.pkl", "wb") as f:
-                pickle.dump(q_trajs, f)
-            with open(f"trajectories/{filename}.dt.pkl", "wb") as f:
-                pickle.dump(dt, f)
+        if (save):
+            yes_or_else = input("Save trajectories? (Y)\n")
+            if (yes_or_else == "Y"):
+                filename = input("Enter a filename.\n")
+                with open(f"trajectories/{filename}.pkl", "wb") as f:
+                    pickle.dump(q_trajs, f)
+                with open(f"trajectories/{filename}.dt.pkl", "wb") as f:
+                    pickle.dump(dt, f)
 
-        run_on_robot(q_trajs, dt)
+        run_on_robot(robot, q_trajs, dt)
 
 
-def run_on_robot(q_trajs, dt):
+def run_on_robot(robot, q_trajs, dt):
+    # Sim or real, works the same.
     dt = float(dt)
     for q_traj in q_trajs:
-        # yes_or_else = input("To run on the sim/real robot, type [yes], then press enter\n")
-        # if yes_or_else != "yes":
-        #     print("User did not type [yes], will not run on sim/real robot")
-        #     return robot
         def trajectory_callback(index):
             print(f"At trajectory index: {index}")
             print(f"Commanding joint positions: {q_traj[index]}")
@@ -74,18 +67,35 @@ def run_on_robot(q_trajs, dt):
 
 
 if __name__ == "__main__":
-    robot, rtb_model = new_robot(is_simulation=False)
+    robot, rtb_model = new_robot()
 
     if (len(sys.argv) > 1):
+        # Try to load trajectories
+
+        # First, we need to be in the ready position that the saved trajectories expect
+        make_trajectories_and_run(
+            robot, 
+            [targets.ready], 
+            [(0.02, 0.01, 0.05)],
+            save=False
+        )
+
         for i in range(1, len(sys.argv)):
             # Find the trajectories from the files given
             with open(f"trajectories/{sys.argv[i]}.pkl", "rb") as f:
                 q_trajs = pickle.load(f)
             with open(f"trajectories/{sys.argv[i]}.dt.pkl", "rb") as f:
                 dt = pickle.load(f)
-            run_on_robot(q_trajs, dt)
+            run_on_robot(robot, q_trajs, dt)
     else:
-        make_trajectories([targets.ee_init, targets.board, targets.reset], [(1, 0.6, 0.6), (0.2, 0.2, 0.4), (1, 0.6, 0.6)])
+        # Don't load trajectories, generate them on the fly
+        # Make sure to generate a "ready" target before any other target, so that
+        # the targets always execute starting from the ready position
+        make_trajectories_and_run(
+            robot, 
+            [targets.ready, targets.board], 
+            [(0.2, 0.1, 0.5), (0.2, 0.1, 0.5)]
+        )
 
 
     robot.stop() # Makes sure render thread ends

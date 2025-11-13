@@ -28,7 +28,7 @@ ready_pose = SE3(np.array([
     [0, 0, 0, 1],
 ]))
 
-def reset(se3_start):
+def ready(se3_start):
     return [ready_pose]
 
 
