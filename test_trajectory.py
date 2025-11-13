@@ -15,11 +15,11 @@ def new_robot(is_simulation=True):
     if is_simulation:
         from franka_api.visualizer import RtbVisualizer
         robot = RtbVisualizer(panda_rtb_model, panda_rtb_model.qr)
-    # else:
-    #     import csc376_bind_franky
-    #     robot = csc376_bind_franky.FrankaJointTrajectoryController("192.168.1.107")
-    #     robot.setupSignalHandler()
-    #     q_start = robot.get_current_joint_positions()
+    else:
+        import csc376_bind_franky
+        robot = csc376_bind_franky.FrankaJointTrajectoryController("192.168.1.107")
+        robot.setupSignalHandler()
+        q_start = robot.get_current_joint_positions()
 
     return robot, panda_rtb_model
 
@@ -74,7 +74,7 @@ def run_on_robot(q_trajs, dt):
 
 
 if __name__ == "__main__":
-    robot, rtb_model = new_robot()
+    robot, rtb_model = new_robot(is_simulation=False)
 
     if (len(sys.argv) > 1):
         for i in range(1, len(sys.argv)):
