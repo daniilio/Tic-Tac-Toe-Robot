@@ -85,7 +85,8 @@ if __name__ == "__main__":
                 dt = pickle.load(f)
             run_on_robot(q_trajs, dt)
     else:
-        make_trajectories([targets.ee_init, targets.board, targets.reset], [(1, 0.6, 0.6), (0.2, 0.2, 0.4), (1, 0.6, 0.6)])
+        # make_trajectories([targets.ee_init, targets.board, targets.reset], [(1, 0.6, 0.6), (0.2, 0.2, 0.4), (1, 0.6, 0.6)])
+        make_trajectories([targets.ee_init, targets.circle, targets.reset], [(1, 0.6, 0.6), (0.2, 0.2, 0.4), (1, 0.6, 0.6)])
 
 
     robot.stop() # Makes sure render thread ends
