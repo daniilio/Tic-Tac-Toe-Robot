@@ -1,6 +1,7 @@
 import roboticstoolbox as rtb
 import time
 import sys
+import pickle
 
 from franka_api.motion_generator import RuckigMotionGenerator
 import numpy as np
@@ -23,39 +24,39 @@ def new_robot(is_simulation=True):
     return robot, panda_rtb_model
 
 
-def compute_trajectories(rtb_model, target_func):
-    relative_vel_factor = 0.08
-    relative_acc_factor = 0.04
-    relative_jerk_factor = 0.2
-
+def make_trajectories(funcs, factors):
     motion_generator = RuckigMotionGenerator()
     
     q_start = rtb_model.qr
     se3_start = rtb_model.fkine(q_start)
-    se3_targets = target_func(se3_start)
-    
-    # Calculate trajectories
-    start_time = time.time()
-    q_trajs = []
-    se3_current = se3_start
-    q_current = q_start
-    for se3_target in se3_targets:
-        cartesian_traj, dt = motion_generator.calculate_cartesian_pose_trajectory(se3_current, se3_target,
-                                                                                  relative_vel_factor, relative_acc_factor, relative_jerk_factor) 
-        q_traj = motion_generator.cartesian_pose_to_joint_trajectory(rtb_model, q_current, cartesian_traj)
-        q_trajs.append(q_traj)
-        se3_current = se3_target
-        q_current = q_traj[-1]
-    end_time = time.time()
 
-    print(f"Took {end_time - start_time} seconds to compute trajectories.")
-    yes_or_else = input("Save trajectories? (Y)\n")
-    if (yes_or_else == "Y"):
-        filename = input("Enter a filename.\n")
-        np.save(f"trajectories/{filename}.npy", np.array(q_trajs, dtype=object))
-        np.save(f"trajectories/{filename}.dt.npy", dt)
+    for i, func in enumerate(funcs):
+        start_time = time.time()
+        q_trajs = []
+        if i == 0:
+            se3_current = se3_start 
+            q_current = q_start
+        se3_targets = func(se3_current)
 
-    return q_trajs, dt
+        for se3_target in se3_targets:
+            cartesian_traj, dt = motion_generator.calculate_cartesian_pose_trajectory(se3_current, se3_target,
+                                                                                    factors[i][0], factors[i][1], factors[i][2]) 
+            q_traj = motion_generator.cartesian_pose_to_joint_trajectory(rtb_model, q_current, cartesian_traj)
+            q_trajs.append(q_traj)
+            se3_current = se3_target
+            q_current = q_traj[-1]
+        end_time = time.time()
+
+        print(f"Took {end_time - start_time} seconds to compute trajectories.")
+        yes_or_else = input("Save trajectories? (Y)\n")
+        if (yes_or_else == "Y"):
+            filename = input("Enter a filename.\n")
+            with open(f"trajectories/{filename}.pkl", "wb") as f:
+                pickle.dump(q_trajs, f)
+            with open(f"trajectories/{filename}.dt.pkl", "wb") as f:
+                pickle.dump(dt, f)
+
+        run_on_robot(q_trajs, dt)
 
 
 def run_on_robot(q_trajs, dt):
@@ -76,12 +77,15 @@ if __name__ == "__main__":
     robot, rtb_model = new_robot()
 
     if (len(sys.argv) > 1):
-        # Find the trajectories from the file given
-        q_trajs = np.load(f"trajectories/{sys.argv[1]}.npy", allow_pickle=True)
-        dt = np.load(f"trajectories/{sys.argv[1]}.dt.npy", allow_pickle=True)
+        for i in range(1, len(sys.argv)):
+            # Find the trajectories from the files given
+            with open(f"trajectories/{sys.argv[i]}.pkl", "rb") as f:
+                q_trajs = pickle.load(f)
+            with open(f"trajectories/{sys.argv[i]}.dt.pkl", "rb") as f:
+                dt = pickle.load(f)
+            run_on_robot(q_trajs, dt)
     else:
-        q_trajs, dt = compute_trajectories(rtb_model, targets.board)
-    run_on_robot(q_trajs, dt)
+        make_trajectories([targets.ee_init, targets.board, targets.reset], [(1, 0.6, 0.6), (0.2, 0.2, 0.4), (1, 0.6, 0.6)])
 
 
     robot.stop() # Makes sure render thread ends

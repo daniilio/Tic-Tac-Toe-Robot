@@ -2,6 +2,7 @@
 # relative to the end effector of the Panda, which is given by se3_start. 
 
 from spatialmath import SE3
+import numpy as np
 
 def test_targets(se3_start):
     se3_targets = []
@@ -20,10 +21,21 @@ def test_targets(se3_start):
     return se3_targets
 
 
+ready_pose = SE3(np.array([
+    [1, 0, 0, 0.484],
+    [0, -1, 0, 0],
+    [0, 0, -1, 0.4126],
+    [0, 0, 0, 1],
+]))
+
+def reset(se3_start):
+    return [ready_pose]
+
+
 def board(se3_start):
     se3_targets = []
     side_length = 0.2
-    descent = 0.35
+    descent = 0.25
 
     # Start at current pose
     se3_target = se3_start
@@ -82,5 +94,34 @@ def board(se3_start):
     ua(lift(se3_target))
 
     se3_targets.append(se3_start)
+
+    return se3_targets
+
+
+def ee_init(se3_start):
+    se3_targets = []
+
+    # Start at current pose
+    se3_target = se3_start
+
+    def ua(t):
+        """ Short for "update and append"
+        """
+        nonlocal se3_target
+        se3_target = t
+        se3_targets.append(se3_target)
+
+    arr = np.array([
+        [0, 0, -1, 0.1749],
+        [0, -1, 0, 0],
+        [-1, 0, 0, 0.5046],
+        [0, 0, 0, 1]
+    ])
+
+    # Rotate
+    ua(SE3(arr))
+
+    # Move ahead a bit
+    ua(SE3.Tx(0.2) * se3_target)
 
     return se3_targets
