@@ -33,6 +33,57 @@ def reset(se3_start):
     return [ready_pose]
 
 
+def cross(se3_start):
+    se3_targets = []
+    length = 0.1
+    descent = 0.25
+
+    se3_target = se3_start  # start at current pose
+    
+    def lift(pos):
+        return SE3.Tz(0.02) * pos
+
+    def place(pos):
+        return SE3.Tz(-0.02) * pos
+
+    def ua(t):
+        """Short for 'update and append'"""
+        nonlocal se3_target
+        se3_target = t
+        se3_targets.append(se3_target)
+
+    # move to start point of cross
+    cross_height = length * np.cos(np.pi / 4)
+
+    ua(SE3.Tx(cross_height / 2) * se3_target)
+    ua(SE3.Ty(cross_height / 2) * se3_target)
+
+    # move down toward the table before drawing
+    ua(SE3.Tz(-descent) * se3_target)
+
+    # draw first line of the cross
+    ua(place(se3_target))  # place marker close to page
+
+    ua(SE3.Tx(-1 * cross_height) * se3_target)
+    ua(SE3.Ty(-1 * cross_height) * se3_target)
+
+    ua(lift(se3_target))  # lift marker 
+
+    # draw second line of the cross
+    ua(SE3.Tx(cross_height) * se3_target)
+    ua(place(se3_target))  # place marker close to page
+
+    ua(SE3.Tx(-1 * cross_height) * se3_target)
+    ua(SE3.Ty(cross_height) * se3_target)
+
+    ua(lift(se3_target))  # lift marker 
+
+    # return to start pose
+    se3_targets.append(se3_start)
+
+    return se3_targets    
+
+
 def circle(se3_start):
     se3_targets = []
     radius = 0.05
