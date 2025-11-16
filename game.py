@@ -38,7 +38,9 @@ class TicTacToeGame:
 
     def get_user_move(self) -> int:
         """
+        Read the user's move from the camera.
         If invalid return -1, else return the move user made (0-8).
+
         This function:
         1. Captures one frame from the camera.
         2. Uses BoardReader to detect the board.
@@ -123,8 +125,6 @@ class TicTacToeGame:
                 f"but human player is {self.human_player}."
             )
             return -1
-
-        # TODO: (Optional) check consistency of the rest of the board here.
 
         # Valid move detected
         print(f"User move detected at index: {move_idx}")
