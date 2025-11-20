@@ -103,8 +103,9 @@ if __name__ == "__main__":
 
         make_trajectories_and_run(
             robot, 
-            [targets.board], 
-            [(0.02, 0.01, 0.05)]
+            rtb_model,
+            [targets.ready, targets.board], 
+            [(0.02, 0.01, 0.05), (0.02, 0.01, 0.05)]
         )
 
         q_target = targets_joint.READY
@@ -118,5 +119,6 @@ if __name__ == "__main__":
 
 
     robot.stop() # Makes sure render thread ends
+
 
 
