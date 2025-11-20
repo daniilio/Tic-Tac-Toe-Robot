@@ -64,7 +64,7 @@ def joint_space_trajectory(robot: csc376_bind_franky.FrankaJointTrajectoryContro
     q_traj = np.linspace(q_start, q_target, num_points)
 
     # Time step
-    dt = 0.03  # 10 ms between commands
+    dt = 0.03  # 30 ms between commands
     run_on_robot(robot, [q_traj], dt)
 
 
@@ -114,8 +114,10 @@ if __name__ == "__main__":
         q_target = targets_joint.DRAWING_MODE
         joint_space_trajectory(robot, q_target)
 
-        q_target = targets_joint.READY
-        joint_space_trajectory(robot, q_target)
+
+    # When done, return to the ready position
+    q_target = targets_joint.READY
+    joint_space_trajectory(robot, q_target)
 
 
     robot.stop() # Makes sure render thread ends

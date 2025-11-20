@@ -74,9 +74,16 @@ class RuckigMotionGenerator:
     def __init__(self):
         self.dt = 0.03
         self.ruckig = Ruckig(dofs=7, delta_time=self.dt)
+
+        # --- Cartesian Limits ---
         self.PANDA_VEL_LIM_CARTESIAN = np.array([3.0, 3.0, 3.0, 2.5, 2.5, 2.5, 2.62])   # m/s
         self.PANDA_ACC_LIM_CARTESIAN =  np.array([9.0, 9.0, 9.0, 17.0, 17.0, 17.0, 10.0]) # m/s²
         self.PANDA_JERK_LIM_CARTESIAN = np.array([4500.0, 4500.0, 4500.0, 8500.0, 8500.0, 8500.0, 5000.0]) # m/s³
+
+        # --- Joint Limits ---
+        self.PANDA_VEL_LIM_JOINT = np.array([2.1750, 2.1750, 2.1750, 2.1750, 2.6100, 2.6100, 2.6100])
+        self.PANDA_ACC_LIM_JOINT = np.array([15.0, 7.5, 10.0, 12.5, 15.0, 20.0, 20.0])
+        self.PANDA_JERK_LIM_JOINT = np.array([7500, 3750, 5000, 6250, 7500, 10000, 10000])
 
     def calculate_cartesian_pose_trajectory(self,
                        se3_start : SE3,
@@ -140,6 +147,46 @@ class RuckigMotionGenerator:
             cartesian_pose_traj.append(out.new_position)
             out.pass_to_input(inp)
         return cartesian_pose_traj, self.dt
+    
+
+    def calculate_joint_pose_trajectory(self,
+                       q_start: np.ndarray,
+                       q_target: np.ndarray,
+                       relative_vel_factor=1.0,
+                       relative_acc_factor=1.0,
+                       relative_jerk_factor=1.0):
+        """
+        Generate a smooth joint-space trajectory directly using Ruckig.
+        This guarantees continuous joint velocity, acceleration, and jerk.
+        """
+
+        inp = InputParameter(7)
+        out = OutputParameter(7)
+
+        inp.current_position     = q_start
+        inp.current_velocity     = np.zeros(7)
+        inp.current_acceleration = np.zeros(7)
+
+        inp.target_position      = q_target
+        inp.target_velocity      = np.zeros(7)
+        inp.target_acceleration  = np.zeros(7)
+
+        inp.max_velocity     = self.PANDA_VEL_LIM_JOINT * relative_vel_factor
+        inp.max_acceleration = self.PANDA_ACC_LIM_JOINT * relative_acc_factor
+        inp.max_jerk         = self.PANDA_JERK_LIM_JOINT * relative_jerk_factor
+
+        inp.enabled = [True]*7
+
+        res = Result.Working
+        joint_traj = []
+
+        while res == Result.Working:
+            res = self.ruckig.update(inp, out)
+            joint_traj.append(np.array(out.new_position))
+            out.pass_to_input(inp)
+
+        return joint_traj, self.dt
+
 
     def cartesian_pose_to_joint_trajectory(self, model, q_start: np.ndarray, cartesian_pose_traj: List[List]) -> List[np.ndarray]:
         """ Converts the cartesian pose trajectory to a joint trajectory using inverse kinematics
