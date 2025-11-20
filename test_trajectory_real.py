@@ -114,6 +114,7 @@ if __name__ == "__main__":
 
         make_trajectories_and_run(
             robot, 
+            rtb_model,
             [targets.drawing_mode_1], 
             [(0.2, 0.1, 0.5)]
         )
@@ -123,6 +124,7 @@ if __name__ == "__main__":
 
         make_trajectories_and_run(
             robot, 
+            rtb_model,
             [targets.drawing_mode_2], 
             [(0.2, 0.1, 0.5)]
         )
@@ -132,6 +134,7 @@ if __name__ == "__main__":
 
         make_trajectories_and_run(
             robot, 
+            rtb_model,
             [targets.drawing_mode_3], 
             [(0.2, 0.1, 0.5)]
         )
