@@ -6,6 +6,20 @@ import numpy as np
 
 descent = 0.328
 
+
+def lift(pos):
+    return SE3.Tz(0.02) * pos
+
+def place(pos):
+    return SE3.Tz(-0.02) * pos
+
+def ua(t, se3_targets):
+    """ Short for "update and append"
+    """
+    se3_target = t
+    se3_targets.append(se3_target)
+
+
 def test_targets(se3_start):
     se3_targets = []
     se3_target = SE3.Ty(-0.10) * se3_start
@@ -24,7 +38,6 @@ def test_targets(se3_start):
 
 def drawing_mode(se3_start):
     se3_targets = []
-    side_length = 0.18
     descent = 0.25 # 0.32 wont hit
     se3_target = se3_start
 
@@ -32,18 +45,6 @@ def drawing_mode(se3_start):
     se3_targets.append(se3_target)
     
     return se3_targets
-
-def lift(pos):
-    return SE3.Tz(0.02) * pos
-
-def place(pos):
-    return SE3.Tz(-0.02) * pos
-
-def ua(t, se3_targets):
-    """ Short for "update and append"
-    """
-    se3_target = t
-    se3_targets.append(se3_target)
 
 
 def board(se3_start):
