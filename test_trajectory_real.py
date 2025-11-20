@@ -58,7 +58,7 @@ def make_trajectories_and_run(robot: csc376_bind_franky.FrankaJointTrajectoryCon
 
 def joint_trajectory(robot: csc376_bind_franky.FrankaJointTrajectoryController, q_target: np.array):
     motion_generator = RuckigMotionGenerator()
-    q_start = robot.rtb_robot_model.q
+    q_start = robot.get_current_joint_positions()
     q_traj, dt = motion_generator.calculate_joint_pose_trajectory(q_start, 
                                                                   q_target,
                                                                   relative_vel_factor=0.2,
