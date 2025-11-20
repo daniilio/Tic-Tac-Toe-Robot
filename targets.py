@@ -99,8 +99,6 @@ def board(se3_start):
 def grab_marker(se3_start):
     se3_targets = []
     
-
-
 def ee_init(se3_start):
     se3_targets = []
 
@@ -121,3 +119,73 @@ def ee_init(se3_start):
     ua(SE3.Tx(0.2) * se3_target, se3_targets)
 
     return se3_targets
+
+def cross(se3_start):
+    se3_targets = []
+    length = 0.01
+
+    se3_target = se3_start  # start at current pose
+
+    # move to start point of cross
+    cross_height = length * np.cos(np.pi / 4)
+
+    ua(SE3.Tx(cross_height / 2) * se3_target, se3_targets)
+    ua(SE3.Ty(cross_height / 2) * se3_target, se3_targets)
+
+    # move down toward the table before drawing
+    ua(SE3.Tz(-descent) * se3_target, se3_targets)
+
+    # draw first line of the cross
+    ua(place(se3_target), se3_targets)  # place marker close to page
+
+    ua(SE3.Tx(-1 * cross_height) * se3_target, se3_targets)
+    ua(SE3.Ty(-1 * cross_height) * se3_target, se3_targets)
+
+    ua(lift(se3_target), se3_targets)  # lift marker 
+
+    # draw second line of the cross
+    ua(SE3.Tx(cross_height) * se3_target, se3_targets)
+    ua(place(se3_target), se3_targets)  # place marker close to page
+
+    ua(SE3.Tx(-1 * cross_height) * se3_target, se3_targets)
+    ua(SE3.Ty(cross_height) * se3_target, se3_targets)
+
+    ua(lift(se3_target), se3_targets)  # lift marker 
+
+    # return to start pose
+    se3_targets.append(se3_start)
+
+    return se3_targets    
+
+
+def circle(se3_start):
+    se3_targets = []
+    radius = 0.005
+    sample = 36
+
+    se3_target = se3_start  # start at current pose
+
+    # move to start point of circle
+    ua(SE3.Tx(radius) * se3_target, se3_targets)
+
+    # move down toward the table before drawing
+    ua(SE3.Tz(-descent) * se3_target, se3_targets)
+
+    # --- draw circle ---
+    ua(place(se3_target), se3_targets)  # place marker close to page to draw
+
+    prev_x, prev_y = radius, 0
+    for theta in np.linspace(0, 2 * np.pi, sample, endpoint=False):
+        x = radius * np.cos(theta)
+        y = radius * np.sin(theta)
+        dx = x - prev_x
+        dy = y - prev_y
+        ua(SE3.Tx(dx) * SE3.Ty(dy) * se3_target, se3_targets)
+        prev_x, prev_y = x, y
+
+    ua(lift(se3_target), se3_targets)  # lift marker after drawing the page
+
+    # return to start pose
+    se3_targets.append(se3_start)
+
+    return se3_targets   
