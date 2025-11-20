@@ -90,6 +90,8 @@ if __name__ == "__main__":
         # Try to load trajectories
 
         for i in range(1, len(sys.argv)):
+            q_target = targets_joint.DRAWING_MODE
+            joint_trajectory(robot, q_target)
             # Find the trajectories from the files given
             with open(f"trajectories/{sys.argv[i]}.pkl", "rb") as f:
                 q_trajs = pickle.load(f)
@@ -102,17 +104,34 @@ if __name__ == "__main__":
         # - From ready position, goes into drawing mode (a ready position that is closer to the board)
         # - From drawing mode, go back to ready position
 
+        q_target = targets_joint.DRAWING_MODE
+        joint_trajectory(robot, q_target)
+
         make_trajectories_and_run(
             robot, 
-            [targets.board], 
+            [targets.drawing_mode_1], 
             [(0.2, 0.1, 0.5)]
         )
 
-        q_target = targets_joint.READY
+        q_target = targets_joint.DRAWING_MODE
         joint_trajectory(robot, q_target)
+
+        make_trajectories_and_run(
+            robot, 
+            [targets.drawing_mode_2], 
+            [(0.2, 0.1, 0.5)]
+        )
 
         q_target = targets_joint.DRAWING_MODE
         joint_trajectory(robot, q_target)
+
+        make_trajectories_and_run(
+            robot, 
+            [targets.drawing_mode_3], 
+            [(0.2, 0.1, 0.5)]
+        )
+
+        
 
     
     # When done, return to the ready position
