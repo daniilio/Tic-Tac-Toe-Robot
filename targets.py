@@ -34,8 +34,8 @@ def ready(se3_start):
 
 def board(se3_start):
     se3_targets = []
-    side_length = 0.2
-    descent = 0.25
+    side_length = 0.18
+    descent = 0.328 # 0.32 wont hit
 
     # Start at current pose
     se3_target = se3_start

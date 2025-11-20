@@ -94,9 +94,12 @@ if __name__ == "__main__":
         # the targets always execute starting from the ready position
         make_trajectories_and_run(
             robot, 
+            rtb_model,
             [targets.ready, targets.board], 
-            [(0.2, 0.1, 0.5), (0.2, 0.1, 0.5)]
+            [(0.02, 0.01, 0.05), (0.02, 0.01, 0.05)]
         )
+
+        print(rtb_model.q)
 
 
     robot.stop() # Makes sure render thread ends
