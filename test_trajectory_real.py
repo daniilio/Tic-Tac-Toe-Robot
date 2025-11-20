@@ -104,8 +104,8 @@ if __name__ == "__main__":
         make_trajectories_and_run(
             robot, 
             rtb_model,
-            [targets.ready, targets.board], 
-            [(0.02, 0.01, 0.05), (0.02, 0.01, 0.05)]
+            [targets.board], 
+            [(0.02, 0.01, 0.05)]
         )
 
         q_target = targets_joint.READY
