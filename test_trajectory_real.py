@@ -77,7 +77,8 @@ def run_on_robot(robot: csc376_bind_franky.FrankaJointTrajectoryController, q_tr
             print(f"At trajectory index: {index}")
             print(f"Commanding joint positions: {q_traj[index]}")
         robot.set_trajectory_callback(trajectory_callback)
-        robot.run_joint_trajectory(q_traj, dt)
+        print("Running on robot...")
+        print(robot.run_joint_trajectory(q_traj, dt))
 
 
 if __name__ == "__main__":
@@ -127,7 +128,7 @@ if __name__ == "__main__":
             robot, 
             rtb_model,
             [targets.drawing_mode_9], 
-            [(0.2, 0.1, 0.5)]
+            [(0.08, 0.04, 0.2)]
         )
 
 

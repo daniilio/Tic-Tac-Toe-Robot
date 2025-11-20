@@ -143,9 +143,7 @@ def drawing_mode_9(se3_start):
     se3_target = ua(SE3.Tz(-near) * se3_target, se3_targets)
     se3_target = ua(SE3.Tz(near) * se3_target, se3_targets)
 
-
     return se3_targets
-
 
 def board(se3_start):
     se3_targets = []
