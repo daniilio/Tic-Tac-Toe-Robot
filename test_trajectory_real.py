@@ -102,18 +102,31 @@ if __name__ == "__main__":
         # - From ready position, goes into drawing mode (a ready position that is closer to the board)
         # - From drawing mode, go back to ready position
 
-        make_trajectories_and_run(
-            robot, 
-            rtb_model,
-            [targets.board], 
-            [(0.02, 0.01, 0.05)]
-        )
+        # make_trajectories_and_run(
+        #     robot, 
+        #     rtb_model,
+        #     [targets.board], 
+        #     [(0.02, 0.01, 0.05)]
+        # )
 
         q_target = targets_joint.READY
         joint_trajectory(robot, q_target)
 
         q_target = targets_joint.DRAWING_MODE
         joint_trajectory(robot, q_target)
+
+        q_target = targets_joint.READY
+        joint_trajectory(robot, q_target)
+
+        q_target = targets_joint.DRAWING_MODE
+        joint_trajectory(robot, q_target)
+
+        q_target = targets_joint.READY
+        joint_trajectory(robot, q_target)
+
+        q_target = targets_joint.DRAWING_MODE
+        joint_trajectory(robot, q_target)
+
 
 
     # When done, return to the ready position
