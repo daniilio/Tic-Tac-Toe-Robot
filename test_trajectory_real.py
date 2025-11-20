@@ -127,7 +127,7 @@ if __name__ == "__main__":
             make_trajectories_and_run(
                 robot, 
                 rtb_model,
-                [targs], 
+                [targ], 
                 [(0.2, 0.1, 0.5)]
             )
 
