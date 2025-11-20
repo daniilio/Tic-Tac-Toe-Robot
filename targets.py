@@ -86,7 +86,7 @@ def board(se3_start):
     se3_target = ua(place(se3_target), se3_targets)
     se3_target = ua(SE3.Tx(side_length) * se3_target, se3_targets)
     se3_target = ua(lift(se3_target), se3_targets)
-    # End first horizontal
+    # End first 
 
     # Begin second horizontal
     se3_target = ua(SE3.Ty(-side_length / 3) * se3_target, se3_targets)
@@ -124,7 +124,7 @@ def ee_init(se3_start):
 
 def cross(se3_start):
     se3_targets = []
-    length = 0.01
+    length = 0.1
 
     se3_target = se3_start  # start at current pose
 
@@ -138,7 +138,6 @@ def cross(se3_start):
     se3_target = ua(SE3.Tz(-descent) * se3_target, se3_targets)
 
     # draw first line of the cross
-    se3_target = ua(place(se3_target), se3_targets)  # place marker close to page
 
     se3_target = ua(SE3.Tx(-1 * cross_height) * se3_target, se3_targets)
     se3_target = ua(SE3.Ty(-1 * cross_height) * se3_target, se3_targets)
@@ -162,8 +161,8 @@ def cross(se3_start):
 
 def circle(se3_start):
     se3_targets = []
-    radius = 0.005
-    sample = 36
+    radius = 0.02
+    sample = 25
 
     se3_target = se3_start  # start at current pose
 
@@ -174,10 +173,10 @@ def circle(se3_start):
     se3_target = ua(SE3.Tz(-descent) * se3_target, se3_targets)
 
     # --- draw circle ---
-    se3_target = ua(place(se3_target), se3_targets)  # place marker close to page to draw
+    # se3_target = ua(place(se3_target), se3_targets)  # place marker close to page to draw
 
     prev_x, prev_y = radius, 0
-    for theta in np.linspace(0, 2 * np.pi, sample, endpoint=False):
+    for theta in np.linspace(0, 2 * np.pi, sample, endpoint=True):
         x = radius * np.cos(theta)
         y = radius * np.sin(theta)
         dx = x - prev_x

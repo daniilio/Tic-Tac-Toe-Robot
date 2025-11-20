@@ -38,6 +38,8 @@ def make_trajectories_and_run(robot: csc376_bind_franky.FrankaJointTrajectoryCon
             cartesian_traj, dt = motion_generator.calculate_cartesian_pose_trajectory(se3_current, se3_target,
                                                                                     factors[i][0], factors[i][1], factors[i][2]) 
             q_traj = motion_generator.cartesian_pose_to_joint_trajectory(rtb_model, q_current, cartesian_traj)
+            if len(q_traj) == 1:
+                q_traj = [q_current, q_traj[0]]
             q_trajs.append(q_traj)
             se3_current = se3_target
             q_current = q_traj[-1]
@@ -102,12 +104,12 @@ if __name__ == "__main__":
         # - From ready position, goes into drawing mode (a ready position that is closer to the board)
         # - From drawing mode, go back to ready position
 
-        # make_trajectories_and_run(
-        #     robot, 
-        #     rtb_model,
-        #     [targets.board], 
-        #     [(0.02, 0.01, 0.05)]
-        # )
+        make_trajectories_and_run(
+            robot, 
+            rtb_model,
+            [targets.cross], 
+            [(0.02, 0.01, 0.05)]
+        )
 
         q_target = targets_joint.READY
         joint_trajectory(robot, q_target)
