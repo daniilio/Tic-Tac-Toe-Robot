@@ -20,6 +20,18 @@ def test_targets(se3_start):
 
     return se3_targets
 
+def drawing_mode(se3_start):
+    se3_targets = []
+    side_length = 0.18
+    descent = 0.25 # 0.32 wont hit
+    se3_target = se3_start
+
+    se3_target = SE3.Tz(-descent)  * se3_target
+    se3_targets.append(se3_target)
+    
+    return se3_targets
+
+
 def board(se3_start):
     se3_targets = []
     side_length = 0.18

@@ -7,6 +7,7 @@ import numpy as np
 from franka_api.motion_generator import RuckigMotionGenerator
 import csc376_bind_franky
 import targets
+import targets_joint
 
 np.set_printoptions(precision=4, suppress=True,)  
 
@@ -95,18 +96,25 @@ if __name__ == "__main__":
                 dt = pickle.load(f)
             run_on_robot(robot, q_trajs, dt)
     else:
-        # Don't load trajectories, generate them on the fly
-        # Make sure to generate a "ready" target before any other target, so that
-        # the targets always execute starting from the ready position
+       # Does the following: 
+        # - From ready position, draws the board, then goes back to the ready position. 
+        # - From ready position, goes into drawing mode (a ready position that is closer to the board)
+        # - From drawing mode, go back to ready position
 
         make_trajectories_and_run(
             robot, 
-            rtb_model,
             [targets.board], 
             [(0.02, 0.01, 0.05)]
         )
 
-        print(rtb_model.q)
+        q_target = targets_joint.READY
+        joint_space_trajectory(robot, q_target)
+
+        q_target = targets_joint.DRAWING_MODE
+        joint_space_trajectory(robot, q_target)
+
+        q_target = targets_joint.READY
+        joint_space_trajectory(robot, q_target)
 
 
     robot.stop() # Makes sure render thread ends

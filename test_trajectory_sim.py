@@ -7,6 +7,7 @@ import numpy as np
 from franka_api.motion_generator import RuckigMotionGenerator
 from franka_api.visualizer import RtbVisualizer
 import targets
+import targets_joint
 
 np.set_printoptions(precision=4, suppress=True,)  
 
@@ -63,7 +64,7 @@ def joint_space_trajectory(robot: RtbVisualizer, q_target: np.array):
     q_traj = np.linspace(q_start, q_target, num_points)
 
     # Time step
-    dt = 0.01  # 10 ms between commands
+    dt = 0.03  # 30 ms between commands
     run_on_robot(robot, [q_traj], dt)
 
 
@@ -82,7 +83,7 @@ if __name__ == "__main__":
     robot, rtb_model = new_robot()
 
     # First, we need to be in the ready position that the saved trajectories expect
-    q_target = rtb_model.qr
+    q_target = targets_joint.READY
     joint_space_trajectory(robot, q_target)
 
     if (len(sys.argv) > 1):
@@ -96,14 +97,25 @@ if __name__ == "__main__":
                 dt = pickle.load(f)
             run_on_robot(robot, q_trajs, dt)
     else:
-        # Don't load trajectories, generate them on the fly
-        # Make sure to generate a "ready" target before any other target, so that
-        # the targets always execute starting from the ready position
+        # Does the following: 
+        # - From ready position, draws the board, then goes back to the ready position. 
+        # - From ready position, goes into drawing mode (a ready position that is closer to the board)
+        # - From drawing mode, go back to ready position
+
         make_trajectories_and_run(
             robot, 
             [targets.board], 
             [(0.2, 0.1, 0.5)]
         )
+
+        q_target = targets_joint.READY
+        joint_space_trajectory(robot, q_target)
+
+        q_target = targets_joint.DRAWING_MODE
+        joint_space_trajectory(robot, q_target)
+
+        q_target = targets_joint.READY
+        joint_space_trajectory(robot, q_target)
 
 
     robot.stop() # Makes sure render thread ends
