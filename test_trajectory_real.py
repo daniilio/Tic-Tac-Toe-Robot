@@ -121,15 +121,16 @@ if __name__ == "__main__":
                  targets.drawing_mode_8,
                  targets.drawing_mode_9]
         
-        q_target = targets_joint.DRAWING_MODE
-        joint_trajectory(robot, q_target)
+        for targ in targs:
+            q_target = targets_joint.DRAWING_MODE
+            joint_trajectory(robot, q_target)
 
-        make_trajectories_and_run(
-            robot, 
-            rtb_model,
-            [targets.drawing_mode_9], 
-            [(0.08, 0.04, 0.2)]
-        )
+            make_trajectories_and_run(
+                robot, 
+                rtb_model,
+                [targ], 
+                [(0.08, 0.04, 0.2)]
+            )
 
 
     # When done, return to the ready position
