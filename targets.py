@@ -5,7 +5,7 @@ from spatialmath import SE3
 import numpy as np
 
 descent = 0.328
-near = 0.1
+near = 0.095
 descent_near = descent - near
 side_length = 0.18
 
@@ -54,8 +54,7 @@ def drawing_mode_1(se3_start):
     se3_targets = []
     se3_target = se3_start
 
-    se3_target = ua(SE3.Tx(-side_length * (1/6)) * se3_target, se3_targets)
-    se3_target = ua(SE3.Ty(-side_length * (1/6)) * se3_target, se3_targets)
+    se3_target = ua(SE3.Tx(-side_length * (1/6)) * SE3.Ty(-side_length * (1/6)) * se3_target, se3_targets)
     se3_target = ua(SE3.Tz(-near) * se3_target, se3_targets)
     se3_target = ua(SE3.Tz(near) * se3_target, se3_targets)
 
@@ -65,8 +64,7 @@ def drawing_mode_2(se3_start):
     se3_targets = []
     se3_target = se3_start
 
-    se3_target = ua(SE3.Tx(-side_length * (1/6)) * se3_target, se3_targets)
-    se3_target = ua(SE3.Ty(-side_length * (3/6)) * se3_target, se3_targets)
+    se3_target = ua(SE3.Tx(-side_length * (1/6)) * SE3.Ty(-side_length * (3/6)) * se3_target, se3_targets)
     se3_target = ua(SE3.Tz(-near) * se3_target, se3_targets)
     se3_target = ua(SE3.Tz(near) * se3_target, se3_targets)
 
@@ -76,8 +74,7 @@ def drawing_mode_3(se3_start):
     se3_targets = []
     se3_target = se3_start
 
-    se3_target = ua(SE3.Tx(-side_length * (1/6)) * se3_target, se3_targets)
-    se3_target = ua(SE3.Ty(-side_length * (5/6)) * se3_target, se3_targets)
+    se3_target = ua(SE3.Tx(-side_length * (1/6)) * SE3.Ty(-side_length * (5/6)) * se3_target, se3_targets)
     se3_target = ua(SE3.Tz(-near) * se3_target, se3_targets)
     se3_target = ua(SE3.Tz(near) * se3_target, se3_targets)
 

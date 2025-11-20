@@ -90,6 +90,7 @@ if __name__ == "__main__":
     if (len(sys.argv) > 1):
         # Try to load trajectories
         for i in range(1, len(sys.argv)):
+            joint_trajectory(robot, targets_joint.DRAWING_MODE)
             # Find the trajectories from the files given
             with open(f"trajectories/{sys.argv[i]}.pkl", "rb") as f:
                 q_trajs = pickle.load(f)
