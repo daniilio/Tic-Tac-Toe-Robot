@@ -114,8 +114,10 @@ if __name__ == "__main__":
         q_target = targets_joint.DRAWING_MODE
         joint_space_trajectory(robot, q_target)
 
-        q_target = targets_joint.READY
-        joint_space_trajectory(robot, q_target)
+
+    # When done, return to the ready position
+    q_target = targets_joint.READY
+    joint_space_trajectory(robot, q_target)
 
 
     robot.stop() # Makes sure render thread ends
