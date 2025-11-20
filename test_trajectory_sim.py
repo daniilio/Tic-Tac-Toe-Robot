@@ -56,15 +56,16 @@ def make_trajectories_and_run(robot: RtbVisualizer, funcs, factors, save=True):
         run_on_robot(robot, q_trajs, dt)
 
 
-def joint_space_trajectory(robot: RtbVisualizer, q_target: np.array):
+def run_joint_trajectory(robot: RtbVisualizer, q_target: np.array):
+    motion_generator = RuckigMotionGenerator()
     q_start = robot.rtb_robot_model.q
+    q_traj, dt = motion_generator.calculate_joint_pose_trajectory(q_start, 
+                                                                  q_target,
+                                                                  relative_vel_factor=0.2,
+                                                                  relative_acc_factor=0.1,
+                                                                  relative_jerk_factor=0.5)
+    
 
-    # Simple linear interpolation
-    num_points = 100
-    q_traj = np.linspace(q_start, q_target, num_points)
-
-    # Time step
-    dt = 0.03  # 30 ms between commands
     run_on_robot(robot, [q_traj], dt)
 
 
@@ -81,10 +82,9 @@ def run_on_robot(robot, q_trajs, dt):
 
 if __name__ == "__main__":
     robot, rtb_model = new_robot()
-
     # First, we need to be in the ready position that the saved trajectories expect
     q_target = targets_joint.READY
-    joint_space_trajectory(robot, q_target)
+    run_joint_trajectory(robot, q_target)
 
     if (len(sys.argv) > 1):
         # Try to load trajectories
@@ -109,15 +109,15 @@ if __name__ == "__main__":
         )
 
         q_target = targets_joint.READY
-        joint_space_trajectory(robot, q_target)
+        run_joint_trajectory(robot, q_target)
 
         q_target = targets_joint.DRAWING_MODE
-        joint_space_trajectory(robot, q_target)
+        run_joint_trajectory(robot, q_target)
 
     
     # When done, return to the ready position
     q_target = targets_joint.READY
-    joint_space_trajectory(robot, q_target)
+    run_joint_trajectory(robot, q_target)
 
 
     robot.stop() # Makes sure render thread ends
