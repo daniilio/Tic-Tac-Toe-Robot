@@ -55,6 +55,18 @@ def make_trajectories_and_run(robot: csc376_bind_franky.FrankaJointTrajectoryCon
         run_on_robot(robot, q_trajs, dt)
 
 
+def joint_space_trajectory(robot: csc376_bind_franky.FrankaJointTrajectoryController, q_target: np.array):
+    q_start = robot.get_current_joint_positions()
+
+    # Simple linear interpolation
+    num_points = 100
+    q_traj = np.linspace(q_start, q_target, num_points)
+
+    # Time step
+    dt = 0.01  # 10 ms between commands
+    run_on_robot(robot, [q_traj], dt)
+
+
 def run_on_robot(robot: csc376_bind_franky.FrankaJointTrajectoryController, q_trajs, dt):
     # Sim or real, works the same.
     dt = float(dt)
@@ -69,18 +81,12 @@ def run_on_robot(robot: csc376_bind_franky.FrankaJointTrajectoryController, q_tr
 if __name__ == "__main__":
     robot, rtb_model = new_robot()
 
+    # First, we need to be in the ready position that the saved trajectories expect
+    q_target = rtb_model.qr
+    joint_space_trajectory(robot, q_target)
+
     if (len(sys.argv) > 1):
         # Try to load trajectories
-
-        # First, we need to be in the ready position that the saved trajectories expect
-        make_trajectories_and_run(
-            robot, 
-            rtb_model,
-            [targets.ready], 
-            [(0.02, 0.01, 0.05)],
-            save=False
-        )
-
         for i in range(1, len(sys.argv)):
             # Find the trajectories from the files given
             with open(f"trajectories/{sys.argv[i]}.pkl", "rb") as f:
@@ -92,11 +98,12 @@ if __name__ == "__main__":
         # Don't load trajectories, generate them on the fly
         # Make sure to generate a "ready" target before any other target, so that
         # the targets always execute starting from the ready position
+
         make_trajectories_and_run(
             robot, 
             rtb_model,
-            [targets.ready, targets.board], 
-            [(0.02, 0.01, 0.05), (0.02, 0.01, 0.05)]
+            [targets.board], 
+            [(0.02, 0.01, 0.05)]
         )
 
         print(rtb_model.q)

@@ -55,6 +55,18 @@ def make_trajectories_and_run(robot: RtbVisualizer, funcs, factors, save=True):
         run_on_robot(robot, q_trajs, dt)
 
 
+def joint_space_trajectory(robot: RtbVisualizer, q_target: np.array):
+    q_start = robot.rtb_robot_model.q
+
+    # Simple linear interpolation
+    num_points = 100
+    q_traj = np.linspace(q_start, q_target, num_points)
+
+    # Time step
+    dt = 0.01  # 10 ms between commands
+    run_on_robot(robot, [q_traj], dt)
+
+
 def run_on_robot(robot, q_trajs, dt):
     # Sim or real, works the same.
     dt = float(dt)
@@ -69,16 +81,12 @@ def run_on_robot(robot, q_trajs, dt):
 if __name__ == "__main__":
     robot, rtb_model = new_robot()
 
+    # First, we need to be in the ready position that the saved trajectories expect
+    q_target = rtb_model.qr
+    joint_space_trajectory(robot, q_target)
+
     if (len(sys.argv) > 1):
         # Try to load trajectories
-
-        # First, we need to be in the ready position that the saved trajectories expect
-        make_trajectories_and_run(
-            robot, 
-            [targets.ready], 
-            [(0.02, 0.01, 0.05)],
-            save=False
-        )
 
         for i in range(1, len(sys.argv)):
             # Find the trajectories from the files given
@@ -93,8 +101,8 @@ if __name__ == "__main__":
         # the targets always execute starting from the ready position
         make_trajectories_and_run(
             robot, 
-            [targets.ready, targets.board], 
-            [(0.2, 0.1, 0.5), (0.2, 0.1, 0.5)]
+            [targets.board], 
+            [(0.2, 0.1, 0.5)]
         )
 
 

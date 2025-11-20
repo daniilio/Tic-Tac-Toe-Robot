@@ -20,22 +20,10 @@ def test_targets(se3_start):
 
     return se3_targets
 
-
-ready_pose = SE3(np.array([
-    [1, 0, 0, 0.484],
-    [0, -1, 0, 0],
-    [0, 0, -1, 0.4126],
-    [0, 0, 0, 1],
-]))
-
-def ready(se3_start):
-    return [ready_pose]
-
-
 def board(se3_start):
     se3_targets = []
     side_length = 0.18
-    descent = 0.328 # 0.32 wont hit
+    descent = 0.32 # 0.32 wont hit
 
     # Start at current pose
     se3_target = se3_start
