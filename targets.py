@@ -80,65 +80,65 @@ def drawing_mode_3(se3_start):
 
     return se3_targets
 
-# def drawing_mode_4(se3_start):
-#     se3_targets = []
-#     se3_target = se3_start
+def drawing_mode_4(se3_start):
+    se3_targets = []
+    se3_target = se3_start
 
-#     se3_target = ua(SE3.Tz(-near) * se3_target, se3_targets)
-#     se3_target = ua(SE3.Tx(-side_length * (3/6)) * se3_target, se3_targets)
-#     se3_target = ua(SE3.Ty(-side_length * (1/6)) * se3_target, se3_targets)
+    se3_target = ua(SE3.Tz(-near) * se3_target, se3_targets)
+    se3_target = ua(SE3.Tx(-side_length * (3/6)) * se3_target, se3_targets)
+    se3_target = ua(SE3.Ty(-side_length * (1/6)) * se3_target, se3_targets)
 
-#     return se3_targets
+    return se3_targets
 
-# def drawing_mode_5(se3_start):
-#     se3_targets = []
-#     se3_target = se3_start
+def drawing_mode_5(se3_start):
+    se3_targets = []
+    se3_target = se3_start
 
-#     se3_target = ua(SE3.Tz(-near) * se3_target, se3_targets)
-#     se3_target = ua(SE3.Tx(-side_length * (3/6)) * se3_target, se3_targets)
-#     se3_target = ua(SE3.Ty(-side_length * (3/6)) * se3_target, se3_targets)
+    se3_target = ua(SE3.Tz(-near) * se3_target, se3_targets)
+    se3_target = ua(SE3.Tx(-side_length * (3/6)) * se3_target, se3_targets)
+    se3_target = ua(SE3.Ty(-side_length * (3/6)) * se3_target, se3_targets)
 
-#     return se3_targets
+    return se3_targets
 
-# def drawing_mode_6(se3_start):
-#     se3_targets = []
-#     se3_target = se3_start
+def drawing_mode_6(se3_start):
+    se3_targets = []
+    se3_target = se3_start
 
-#     se3_target = ua(SE3.Tz(-near) * se3_target, se3_targets)
-#     se3_target = ua(SE3.Tx(-side_length * (3/6)) * se3_target, se3_targets)
-#     se3_target = ua(SE3.Ty(-side_length * (5/6)) * se3_target, se3_targets)
+    se3_target = ua(SE3.Tz(-near) * se3_target, se3_targets)
+    se3_target = ua(SE3.Tx(-side_length * (3/6)) * se3_target, se3_targets)
+    se3_target = ua(SE3.Ty(-side_length * (5/6)) * se3_target, se3_targets)
 
-#     return se3_targets
+    return se3_targets
 
-# def drawing_mode_7(se3_start):
-#     se3_targets = []
-#     se3_target = se3_start
+def drawing_mode_7(se3_start):
+    se3_targets = []
+    se3_target = se3_start
 
-#     se3_target = ua(SE3.Tz(-near) * se3_target, se3_targets)
-#     se3_target = ua(SE3.Tx(-side_length * (5/6)) * se3_target, se3_targets)
-#     se3_target = ua(SE3.Ty(-side_length * (1/6)) * se3_target, se3_targets)
+    se3_target = ua(SE3.Tz(-near) * se3_target, se3_targets)
+    se3_target = ua(SE3.Tx(-side_length * (5/6)) * se3_target, se3_targets)
+    se3_target = ua(SE3.Ty(-side_length * (1/6)) * se3_target, se3_targets)
 
-#     return se3_targets
+    return se3_targets
 
-# def drawing_mode_8(se3_start):
-#     se3_targets = []
-#     se3_target = se3_start
+def drawing_mode_8(se3_start):
+    se3_targets = []
+    se3_target = se3_start
 
-#     se3_target = ua(SE3.Tz(-near) * se3_target, se3_targets)
-#     se3_target = ua(SE3.Tx(-side_length * (5/6)) * se3_target, se3_targets)
-#     se3_target = ua(SE3.Ty(-side_length * (3/6)) * se3_target, se3_targets)
+    se3_target = ua(SE3.Tz(-near) * se3_target, se3_targets)
+    se3_target = ua(SE3.Tx(-side_length * (5/6)) * se3_target, se3_targets)
+    se3_target = ua(SE3.Ty(-side_length * (3/6)) * se3_target, se3_targets)
 
-#     return se3_targets
+    return se3_targets
 
-# def drawing_mode_9(se3_start):
-#     se3_targets = []
-#     se3_target = se3_start
+def drawing_mode_9(se3_start):
+    se3_targets = []
+    se3_target = se3_start
 
-#     se3_target = ua(SE3.Tz(-near) * se3_target, se3_targets)
-#     se3_target = ua(SE3.Tx(-side_length * (5/6)) * se3_target, se3_targets)
-#     se3_target = ua(SE3.Ty(-side_length * (5/6)) * se3_target, se3_targets)
+    se3_target = ua(SE3.Tz(-near) * se3_target, se3_targets)
+    se3_target = ua(SE3.Tx(-side_length * (5/6)) * se3_target, se3_targets)
+    se3_target = ua(SE3.Ty(-side_length * (5/6)) * se3_target, se3_targets)
 
-#     return se3_targets
+    return se3_targets
 
 
 def board(se3_start):
