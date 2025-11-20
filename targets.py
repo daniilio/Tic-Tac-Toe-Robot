@@ -18,6 +18,7 @@ def ua(t, se3_targets):
     """
     se3_target = t
     se3_targets.append(se3_target)
+    return se3_target
 
 
 def test_targets(se3_start):
@@ -55,43 +56,43 @@ def board(se3_start):
     se3_target = se3_start
 
     # Move down (get close to the table)
-    ua(SE3.Tz(-descent) * SE3.Tx(side_length/2) * SE3.Ty(side_length/2) * se3_target, se3_targets)
+    se3_target = ua(SE3.Tz(-descent) * SE3.Tx(side_length/2) * SE3.Ty(side_length/2) * se3_target, se3_targets)
 
     # --- Draw outer square ---
-    ua(SE3.Ty(-side_length) * se3_target, se3_targets)  # bottom edge
-    ua(SE3.Tx(-side_length) * se3_target, se3_targets)  # left edge
-    ua(SE3.Ty(side_length) * se3_target, se3_targets)   # top edge
-    ua(SE3.Tx(side_length) * se3_target, se3_targets)   # right edge (close square)
-    ua(lift(se3_target), se3_targets)
+    se3_target = ua(SE3.Ty(-side_length) * se3_target, se3_targets)  # bottom edge
+    se3_target = ua(SE3.Tx(-side_length) * se3_target, se3_targets)  # left edge
+    se3_target = ua(SE3.Ty(side_length) * se3_target, se3_targets)   # top edge
+    se3_target = ua(SE3.Tx(side_length) * se3_target, se3_targets)   # right edge (close square)
+    se3_target = ua(lift(se3_target), se3_targets)
 
     # --- Draw inner grid lines (4 lines total) ---
 
     # Start first vertical
-    ua(SE3.Tx(-side_length / 3) * se3_target, se3_targets)
-    ua(place(se3_target), se3_targets)
-    ua(SE3.Ty(-side_length) * se3_target, se3_targets)
-    ua(lift(se3_target), se3_targets)
+    se3_target = ua(SE3.Tx(-side_length / 3) * se3_target, se3_targets)
+    se3_target = ua(place(se3_target), se3_targets)
+    se3_target = ua(SE3.Ty(-side_length) * se3_target, se3_targets)
+    se3_target = ua(lift(se3_target), se3_targets)
     # End first vertical
 
     # Start second vertical
-    ua(SE3.Tx(-side_length / 3) * se3_target, se3_targets)
-    ua(place(se3_target), se3_targets)
-    ua(SE3.Ty(side_length) * se3_target, se3_targets)
-    ua(lift(se3_target), se3_targets)
+    se3_target = ua(SE3.Tx(-side_length / 3) * se3_target, se3_targets)
+    se3_target = ua(place(se3_target), se3_targets)
+    se3_target = ua(SE3.Ty(side_length) * se3_target, se3_targets)
+    se3_target = ua(lift(se3_target), se3_targets)
     # End second vertical
 
     # Begin first horizontal
-    ua(SE3.Tx(-side_length / 3) * SE3.Ty(-side_length / 3) * se3_target, se3_targets)
-    ua(place(se3_target), se3_targets)
-    ua(SE3.Tx(side_length) * se3_target, se3_targets)
-    ua(lift(se3_target), se3_targets)
+    se3_target = ua(SE3.Tx(-side_length / 3) * SE3.Ty(-side_length / 3) * se3_target, se3_targets)
+    se3_target = ua(place(se3_target), se3_targets)
+    se3_target = ua(SE3.Tx(side_length) * se3_target, se3_targets)
+    se3_target = ua(lift(se3_target), se3_targets)
     # End first horizontal
 
     # Begin second horizontal
-    ua(SE3.Ty(-side_length / 3) * se3_target, se3_targets)
-    ua(place(se3_target), se3_targets)
-    ua(SE3.Tx(-side_length) * se3_target, se3_targets)
-    ua(lift(se3_target), se3_targets)
+    se3_target = ua(SE3.Ty(-side_length / 3) * se3_target, se3_targets)
+    se3_target = ua(place(se3_target), se3_targets)
+    se3_target = ua(SE3.Tx(-side_length) * se3_target, se3_targets)
+    se3_target = ua(lift(se3_target), se3_targets)
 
     se3_targets.append(se3_start)
 
@@ -114,10 +115,10 @@ def ee_init(se3_start):
     ])
 
     # Rotate
-    ua(SE3(arr), se3_targets)
+    se3_target = ua(SE3(arr), se3_targets)
 
     # Move ahead a bit
-    ua(SE3.Tx(0.2) * se3_target, se3_targets)
+    se3_target = ua(SE3.Tx(0.2) * se3_target, se3_targets)
 
     return se3_targets
 
@@ -130,28 +131,28 @@ def cross(se3_start):
     # move to start point of cross
     cross_height = length * np.cos(np.pi / 4)
 
-    ua(SE3.Tx(cross_height / 2) * se3_target, se3_targets)
-    ua(SE3.Ty(cross_height / 2) * se3_target, se3_targets)
+    se3_target = ua(SE3.Tx(cross_height / 2) * se3_target, se3_targets)
+    se3_target = ua(SE3.Ty(cross_height / 2) * se3_target, se3_targets)
 
     # move down toward the table before drawing
-    ua(SE3.Tz(-descent) * se3_target, se3_targets)
+    se3_target = ua(SE3.Tz(-descent) * se3_target, se3_targets)
 
     # draw first line of the cross
-    ua(place(se3_target), se3_targets)  # place marker close to page
+    se3_target = ua(place(se3_target), se3_targets)  # place marker close to page
 
-    ua(SE3.Tx(-1 * cross_height) * se3_target, se3_targets)
-    ua(SE3.Ty(-1 * cross_height) * se3_target, se3_targets)
+    se3_target = ua(SE3.Tx(-1 * cross_height) * se3_target, se3_targets)
+    se3_target = ua(SE3.Ty(-1 * cross_height) * se3_target, se3_targets)
 
-    ua(lift(se3_target), se3_targets)  # lift marker 
+    se3_target = ua(lift(se3_target), se3_targets)  # lift marker 
 
     # draw second line of the cross
-    ua(SE3.Tx(cross_height) * se3_target, se3_targets)
-    ua(place(se3_target), se3_targets)  # place marker close to page
+    se3_target = ua(SE3.Tx(cross_height) * se3_target, se3_targets)
+    se3_target = ua(place(se3_target), se3_targets)  # place marker close to page
 
-    ua(SE3.Tx(-1 * cross_height) * se3_target, se3_targets)
-    ua(SE3.Ty(cross_height) * se3_target, se3_targets)
+    se3_target = ua(SE3.Tx(-1 * cross_height) * se3_target, se3_targets)
+    se3_target = ua(SE3.Ty(cross_height) * se3_target, se3_targets)
 
-    ua(lift(se3_target), se3_targets)  # lift marker 
+    se3_target = ua(lift(se3_target), se3_targets)  # lift marker 
 
     # return to start pose
     se3_targets.append(se3_start)
@@ -167,13 +168,13 @@ def circle(se3_start):
     se3_target = se3_start  # start at current pose
 
     # move to start point of circle
-    ua(SE3.Tx(radius) * se3_target, se3_targets)
+    se3_target = ua(SE3.Tx(radius) * se3_target, se3_targets)
 
     # move down toward the table before drawing
-    ua(SE3.Tz(-descent) * se3_target, se3_targets)
+    se3_target = ua(SE3.Tz(-descent) * se3_target, se3_targets)
 
     # --- draw circle ---
-    ua(place(se3_target), se3_targets)  # place marker close to page to draw
+    se3_target = ua(place(se3_target), se3_targets)  # place marker close to page to draw
 
     prev_x, prev_y = radius, 0
     for theta in np.linspace(0, 2 * np.pi, sample, endpoint=False):
@@ -181,10 +182,10 @@ def circle(se3_start):
         y = radius * np.sin(theta)
         dx = x - prev_x
         dy = y - prev_y
-        ua(SE3.Tx(dx) * SE3.Ty(dy) * se3_target, se3_targets)
+        se3_target = ua(SE3.Tx(dx) * SE3.Ty(dy) * se3_target, se3_targets)
         prev_x, prev_y = x, y
 
-    ua(lift(se3_target), se3_targets)  # lift marker after drawing the page
+    se3_target = ua(lift(se3_target), se3_targets)  # lift marker after drawing the page
 
     # return to start pose
     se3_targets.append(se3_start)
