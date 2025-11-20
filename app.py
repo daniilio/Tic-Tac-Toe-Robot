@@ -105,11 +105,11 @@ class BoardReader:
         board_squares = squares[start_idx : start_idx + 9]
 
         # Sort board squares by their position (top-left to bottom-right)
-        # We divide y by 100 to "group" by rows i.e. we don't want y to be
+        # We divide y by 50 to "group" by rows i.e. we don't want y to be
         # sensitive to small variations within a row
         def sort_key(sq):
             x, y = cv2.boundingRect(sq)[:2]
-            return (y // 100) * 1000 + x
+            return (y // 50) * 1000 + x
 
         board_squares = sorted(board_squares, key=sort_key)
 
@@ -155,7 +155,7 @@ class BoardReader:
                     minDist=20,
                     param1=50,
                     param2=15,
-                    minRadius=50,
+                    minRadius=10,
                 )
                 if circles is not None:
                     marks.append(self.Marks.O)
