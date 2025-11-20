@@ -33,15 +33,6 @@ def drawing_mode(se3_start):
     
     return se3_targets
 
-
-def board(se3_start):
-    se3_targets = []
-    side_length = 0.18
-    descent = 0.32 # 0.32 wont hit
-
-    # Start at current pose
-    se3_target = se3_start
-
 def lift(pos):
     return SE3.Tz(0.02) * pos
 
