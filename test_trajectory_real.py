@@ -109,23 +109,32 @@ if __name__ == "__main__":
         #     [(0.02, 0.01, 0.05)]
         # )
 
-        q_target = targets_joint.READY
+        q_target = targets_joint.DRAWING_MODE
         joint_trajectory(robot, q_target)
+
+        make_trajectories_and_run(
+            robot, 
+            [targets.drawing_mode_1], 
+            [(0.2, 0.1, 0.5)]
+        )
 
         q_target = targets_joint.DRAWING_MODE
         joint_trajectory(robot, q_target)
 
-        q_target = targets_joint.READY
-        joint_trajectory(robot, q_target)
+        make_trajectories_and_run(
+            robot, 
+            [targets.drawing_mode_2], 
+            [(0.2, 0.1, 0.5)]
+        )
 
         q_target = targets_joint.DRAWING_MODE
         joint_trajectory(robot, q_target)
 
-        q_target = targets_joint.READY
-        joint_trajectory(robot, q_target)
-
-        q_target = targets_joint.DRAWING_MODE
-        joint_trajectory(robot, q_target)
+        make_trajectories_and_run(
+            robot, 
+            [targets.drawing_mode_3], 
+            [(0.2, 0.1, 0.5)]
+        )
 
 
 
