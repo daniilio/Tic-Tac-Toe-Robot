@@ -56,7 +56,7 @@ def make_trajectories_and_run(robot: RtbVisualizer, funcs, factors, save=True):
         run_on_robot(robot, q_trajs, dt)
 
 
-def run_joint_trajectory(robot: RtbVisualizer, q_target: np.array):
+def joint_trajectory(robot: RtbVisualizer, q_target: np.array):
     motion_generator = RuckigMotionGenerator()
     q_start = robot.rtb_robot_model.q
     q_traj, dt = motion_generator.calculate_joint_pose_trajectory(q_start, 
@@ -84,7 +84,7 @@ if __name__ == "__main__":
     robot, rtb_model = new_robot()
     # First, we need to be in the ready position that the saved trajectories expect
     q_target = targets_joint.READY
-    run_joint_trajectory(robot, q_target)
+    joint_trajectory(robot, q_target)
 
     if (len(sys.argv) > 1):
         # Try to load trajectories
@@ -109,15 +109,15 @@ if __name__ == "__main__":
         )
 
         q_target = targets_joint.READY
-        run_joint_trajectory(robot, q_target)
+        joint_trajectory(robot, q_target)
 
         q_target = targets_joint.DRAWING_MODE
-        run_joint_trajectory(robot, q_target)
+        joint_trajectory(robot, q_target)
 
     
     # When done, return to the ready position
     q_target = targets_joint.READY
-    run_joint_trajectory(robot, q_target)
+    joint_trajectory(robot, q_target)
 
 
     robot.stop() # Makes sure render thread ends
