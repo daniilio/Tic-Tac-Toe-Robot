@@ -18,6 +18,47 @@ def new_robot():
     return robot, rtb_model
 
 
+def run_circle_trajectory(robot: csc376_bind_franky.FrankaJointTrajectoryController,
+                          rtb_model: rtb.models.Panda, funcs, save=True):
+    motion_generator = RuckigMotionGenerator()
+    dt = 0.3
+
+    q_start =  robot.get_current_joint_positions()
+    se3_start = rtb_model.fkine(q_start)
+
+    for i, func in enumerate(funcs):
+        start_time = time.time()
+        
+        q_trajs = []
+        if i == 0:
+            se3_current = se3_start
+            q_current = q_start
+            q_trajs.append(np.array(q_start))
+
+        se3_targets = func(se3_current)
+
+        prev_q_traj = q_current
+        for se3_target in se3_targets:
+            q_traj = motion_generator.cartesian_pose_to_joint_trajectory(rtb_model, q_current, se3)
+            q_trajs.append(np.array(q_traj))
+
+            prev_q_traj = q_traj
+        
+        end_time = time.time()
+
+        print(f"Took {end_time - start_time} seconds to compute trajectories.")
+        if (save):
+            yes_or_else = input("Save trajectories? (Y)\n")
+            if (yes_or_else == "Y"):
+                filename = input("Enter a filename.\n")
+                with open(f"trajectories/{filename}.pkl", "wb") as f:
+                    pickle.dump(q_trajs, f)
+                with open(f"trajectories/{filename}.dt.pkl", "wb") as f:
+                    pickle.dump(dt, f)
+
+        run_on_robot(robot, q_trajs, dt)
+
+
 def make_trajectories_and_run(robot: csc376_bind_franky.FrankaJointTrajectoryController,
                               rtb_model: rtb.models.Panda, funcs, factors, save=True):
     
@@ -38,8 +79,6 @@ def make_trajectories_and_run(robot: csc376_bind_franky.FrankaJointTrajectoryCon
             cartesian_traj, dt = motion_generator.calculate_cartesian_pose_trajectory(se3_current, se3_target,
                                                                                     factors[i][0], factors[i][1], factors[i][2]) 
             q_traj = motion_generator.cartesian_pose_to_joint_trajectory(rtb_model, q_current, cartesian_traj)
-            if len(q_traj) == 1:
-                q_traj = [q_current, q_traj[0]]
             q_trajs.append(q_traj)
             se3_current = se3_target
             q_current = q_traj[-1]
@@ -63,9 +102,9 @@ def joint_trajectory(robot: csc376_bind_franky.FrankaJointTrajectoryController, 
     q_start = robot.get_current_joint_positions()
     q_traj, dt = motion_generator.calculate_joint_pose_trajectory(q_start, 
                                                                   q_target,
-                                                                  relative_vel_factor=0.2,
-                                                                  relative_acc_factor=0.1,
-                                                                  relative_jerk_factor=0.5)
+                                                                  relative_vel_factor=0.08,
+                                                                  relative_acc_factor=0.04,
+                                                                  relative_jerk_factor=0.02)
     
 
     run_on_robot(robot, [q_traj], dt)
@@ -79,7 +118,9 @@ def run_on_robot(robot: csc376_bind_franky.FrankaJointTrajectoryController, q_tr
             print(f"At trajectory index: {index}")
             print(f"Commanding joint positions: {q_traj[index]}")
         robot.set_trajectory_callback(trajectory_callback)
-        robot.run_joint_trajectory(q_traj, dt)
+        print("Running on robot...")
+        print("q_traj: ", q_traj)
+        print(robot.run_joint_trajectory(q_traj, dt))
 
 
 if __name__ == "__main__":
@@ -92,6 +133,7 @@ if __name__ == "__main__":
     if (len(sys.argv) > 1):
         # Try to load trajectories
         for i in range(1, len(sys.argv)):
+            joint_trajectory(robot, targets_joint.DRAWING_MODE)
             # Find the trajectories from the files given
             with open(f"trajectories/{sys.argv[i]}.pkl", "rb") as f:
                 q_trajs = pickle.load(f)
@@ -104,31 +146,39 @@ if __name__ == "__main__":
         # - From ready position, goes into drawing mode (a ready position that is closer to the board)
         # - From drawing mode, go back to ready position
 
-        make_trajectories_and_run(
+        # make_trajectories_and_run(
+        #     robot, 
+        #     rtb_model,
+        #     [targets.cross], 
+        #     [(0.02, 0.01, 0.05)]
+        # )
+
+        run_circle_trajectory(
             robot, 
             rtb_model,
-            [targets.cross], 
-            [(0.02, 0.01, 0.05)]
+            [targets.circle]
         )
 
-        q_target = targets_joint.READY
-        joint_trajectory(robot, q_target)
+        targs = [targets.drawing_mode_1, 
+                 targets.drawing_mode_2, 
+                 targets.drawing_mode_3, 
+                 targets.drawing_mode_4,
+                 targets.drawing_mode_5,
+                 targets.drawing_mode_6,
+                 targets.drawing_mode_7,
+                 targets.drawing_mode_8,
+                 targets.drawing_mode_9]
+        
+        for targ in targs:
+            q_target = targets_joint.DRAWING_MODE
+            joint_trajectory(robot, q_target)
 
-        q_target = targets_joint.DRAWING_MODE
-        joint_trajectory(robot, q_target)
-
-        q_target = targets_joint.READY
-        joint_trajectory(robot, q_target)
-
-        q_target = targets_joint.DRAWING_MODE
-        joint_trajectory(robot, q_target)
-
-        q_target = targets_joint.READY
-        joint_trajectory(robot, q_target)
-
-        q_target = targets_joint.DRAWING_MODE
-        joint_trajectory(robot, q_target)
-
+            make_trajectories_and_run(
+                robot, 
+                rtb_model,
+                [targ], 
+                [(0.08, 0.04, 0.2)]
+            )
 
 
     # When done, return to the ready position

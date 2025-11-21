@@ -234,8 +234,7 @@ def cross(se3_start):
 
     # draw first line of the cross
 
-    se3_target = ua(SE3.Tx(-1 * cross_height) * se3_target, se3_targets)
-    se3_target = ua(SE3.Ty(-1 * cross_height) * se3_target, se3_targets)
+    se3_target = ua(SE3.Ty(-1 * cross_height) * SE3.Tx(-1 * cross_height) * se3_target, se3_targets)
 
     se3_target = ua(lift(se3_target), se3_targets)  # lift marker 
 
@@ -243,8 +242,7 @@ def cross(se3_start):
     se3_target = ua(SE3.Tx(cross_height) * se3_target, se3_targets)
     se3_target = ua(place(se3_target), se3_targets)  # place marker close to page
 
-    se3_target = ua(SE3.Tx(-1 * cross_height) * se3_target, se3_targets)
-    se3_target = ua(SE3.Ty(cross_height) * se3_target, se3_targets)
+    se3_target = ua(SE3.Ty(cross_height) * SE3.Tx(-1 * cross_height) * se3_target, se3_targets)
 
     se3_target = ua(lift(se3_target), se3_targets)  # lift marker 
 
