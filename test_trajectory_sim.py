@@ -116,6 +116,64 @@ if __name__ == "__main__":
         q_target = targets_joint.DRAWING_MODE
         joint_trajectory(robot, q_target, "READY_to_DRAWING_MODE")
 
+        # Horizontal strikes
+        for idx, mode in zip([9, 6, 3], [targets.drawing_mode_9, targets.drawing_mode_6, targets.drawing_mode_3]):
+            make_trajectories_and_run(
+                robot,
+                [mode],
+                [(0.2, 0.1, 0.5)],
+                f"DRAWING_MODE_to_MODE_{idx}"
+            )
+            make_trajectories_and_run(
+                robot,
+                [targets.strike_horizontal],
+                [(0.2, 0.1, 0.5)],
+                f"MODE_{idx}_to_HORIZONTAL_{idx}"
+            )
+            q_target = targets_joint.DRAWING_MODE
+            joint_trajectory(robot, q_target, f"HORIZONTAL_{idx}_to_DRAWING_MODE")
+
+        # Vertical strikes
+        for idx, mode in zip([3, 2, 1], [targets.drawing_mode_3, targets.drawing_mode_2, targets.drawing_mode_1]):
+            make_trajectories_and_run(
+                robot,
+                [mode],
+                [(0.2, 0.1, 0.5)],
+                f"DRAWING_MODE_to_MODE_{idx}"
+            )
+            make_trajectories_and_run(
+                robot,
+                [targets.strike_vertical],
+                [(0.2, 0.1, 0.5)],
+                f"MODE_{idx}_to_VERTICAL_{idx}"
+            )
+            q_target = targets_joint.DRAWING_MODE
+            joint_trajectory(robot, q_target, f"VERTICAL_{idx}_to_DRAWING_MODE")
+
+        # Diagonal strikes
+        diagonal_modes = [
+            (9, targets.drawing_mode_9, targets.strike_diagonal_from_9),
+            (7, targets.drawing_mode_7, targets.strike_diagonal_from_7)
+        ]
+
+        for idx, mode, strike_func in diagonal_modes:
+            make_trajectories_and_run(
+                robot,
+                [mode],
+                [(0.2, 0.1, 0.5)],
+                f"DRAWING_MODE_to_MODE_{idx}"
+            )
+            make_trajectories_and_run(
+                robot,
+                [strike_func],
+                [(0.2, 0.1, 0.5)],
+                f"MODE_{idx}_to_DIAGONAL_{idx}"
+            )
+            q_target = targets_joint.DRAWING_MODE
+            joint_trajectory(robot, q_target, f"DIAGONAL_{idx}_to_DRAWING_MODE")
+
+        # WILL BE AT DRAWING MODE NOW
+
         # Loop over drawing modes 1-9
         for i in range(1, 10):
             mode_name = f"drawing_mode_{i}"
@@ -126,6 +184,13 @@ if __name__ == "__main__":
                 [se3_func],
                 [(0.2, 0.1, 0.5)],
                 f"DRAWING_MODE_to_MODE_{i}"
+            )
+
+            make_trajectories_and_run(
+                robot,
+                [targets.cross],
+                [(0.2, 0.1, 0.5)],
+                f"CROSS_{i}"
             )
 
             # Return to DRAWING_MODE after each drawing mode
