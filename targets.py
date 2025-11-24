@@ -83,65 +83,65 @@ def drawing_mode_3(se3_start):
 
     return se3_targets
 
-# def drawing_mode_4(se3_start):
-#     se3_targets = []
-#     se3_target = se3_start
+def drawing_mode_4(se3_start):
+    se3_targets = []
+    se3_target = se3_start
 
-#     se3_target = ua(SE3.Tz(-near) * se3_target, se3_targets)
-#     se3_target = ua(SE3.Tx(-side_length * (3/6)) * se3_target, se3_targets)
-#     se3_target = ua(SE3.Ty(-side_length * (1/6)) * se3_target, se3_targets)
+    se3_target = ua(SE3.Tz(-near) * se3_target, se3_targets)
+    se3_target = ua(SE3.Tx(-side_length * (3/6)) * se3_target, se3_targets)
+    se3_target = ua(SE3.Ty(-side_length * (1/6)) * se3_target, se3_targets)
 
-#     return se3_targets
+    return se3_targets
 
-# def drawing_mode_5(se3_start):
-#     se3_targets = []
-#     se3_target = se3_start
+def drawing_mode_5(se3_start):
+    se3_targets = []
+    se3_target = se3_start
 
-#     se3_target = ua(SE3.Tz(-near) * se3_target, se3_targets)
-#     se3_target = ua(SE3.Tx(-side_length * (3/6)) * se3_target, se3_targets)
-#     se3_target = ua(SE3.Ty(-side_length * (3/6)) * se3_target, se3_targets)
+    se3_target = ua(SE3.Tz(-near) * se3_target, se3_targets)
+    se3_target = ua(SE3.Tx(-side_length * (3/6)) * se3_target, se3_targets)
+    se3_target = ua(SE3.Ty(-side_length * (3/6)) * se3_target, se3_targets)
 
-#     return se3_targets
+    return se3_targets
 
-# def drawing_mode_6(se3_start):
-#     se3_targets = []
-#     se3_target = se3_start
+def drawing_mode_6(se3_start):
+    se3_targets = []
+    se3_target = se3_start
 
-#     se3_target = ua(SE3.Tz(-near) * se3_target, se3_targets)
-#     se3_target = ua(SE3.Tx(-side_length * (3/6)) * se3_target, se3_targets)
-#     se3_target = ua(SE3.Ty(-side_length * (5/6)) * se3_target, se3_targets)
+    se3_target = ua(SE3.Tz(-near) * se3_target, se3_targets)
+    se3_target = ua(SE3.Tx(-side_length * (3/6)) * se3_target, se3_targets)
+    se3_target = ua(SE3.Ty(-side_length * (5/6)) * se3_target, se3_targets)
 
-#     return se3_targets
+    return se3_targets
 
-# def drawing_mode_7(se3_start):
-#     se3_targets = []
-#     se3_target = se3_start
+def drawing_mode_7(se3_start):
+    se3_targets = []
+    se3_target = se3_start
 
-#     se3_target = ua(SE3.Tz(-near) * se3_target, se3_targets)
-#     se3_target = ua(SE3.Tx(-side_length * (5/6)) * se3_target, se3_targets)
-#     se3_target = ua(SE3.Ty(-side_length * (1/6)) * se3_target, se3_targets)
+    se3_target = ua(SE3.Tz(-near) * se3_target, se3_targets)
+    se3_target = ua(SE3.Tx(-side_length * (5/6)) * se3_target, se3_targets)
+    se3_target = ua(SE3.Ty(-side_length * (1/6)) * se3_target, se3_targets)
 
-#     return se3_targets
+    return se3_targets
 
-# def drawing_mode_8(se3_start):
-#     se3_targets = []
-#     se3_target = se3_start
+def drawing_mode_8(se3_start):
+    se3_targets = []
+    se3_target = se3_start
 
-#     se3_target = ua(SE3.Tz(-near) * se3_target, se3_targets)
-#     se3_target = ua(SE3.Tx(-side_length * (5/6)) * se3_target, se3_targets)
-#     se3_target = ua(SE3.Ty(-side_length * (3/6)) * se3_target, se3_targets)
+    se3_target = ua(SE3.Tz(-near) * se3_target, se3_targets)
+    se3_target = ua(SE3.Tx(-side_length * (5/6)) * se3_target, se3_targets)
+    se3_target = ua(SE3.Ty(-side_length * (3/6)) * se3_target, se3_targets)
 
-#     return se3_targets
+    return se3_targets
 
-# def drawing_mode_9(se3_start):
-#     se3_targets = []
-#     se3_target = se3_start
+def drawing_mode_9(se3_start):
+    se3_targets = []
+    se3_target = se3_start
 
-#     se3_target = ua(SE3.Tz(-near) * se3_target, se3_targets)
-#     se3_target = ua(SE3.Tx(-side_length * (5/6)) * se3_target, se3_targets)
-#     se3_target = ua(SE3.Ty(-side_length * (5/6)) * se3_target, se3_targets)
+    se3_target = ua(SE3.Tz(-near) * se3_target, se3_targets)
+    se3_target = ua(SE3.Tx(-side_length * (5/6)) * se3_target, se3_targets)
+    se3_target = ua(SE3.Ty(-side_length * (5/6)) * se3_target, se3_targets)
 
-#     return se3_targets
+    return se3_targets
 
 
 def board(se3_start):
@@ -226,7 +226,7 @@ def cross(se3_start):
     # move to start point of cross
     cross_height = length * np.cos(np.pi / 4)
 
-    se3_target = ua(SE3.Tx(cross_height / 2) * se3_target, se3_targets)
+    se3_target = ua(SE3.Tx(cross_height / 2) * SE3.Ty(cross_height / 2) * se3_target, se3_targets)
     se3_target = ua(SE3.Ty(cross_height / 2) * se3_target, se3_targets)
 
     # move down toward the table before drawing
@@ -254,34 +254,34 @@ def cross(se3_start):
     return se3_targets    
 
 
-def circle(se3_start):
-    se3_targets = []
-    radius = 0.02
-    sample = 25
+# def circle(se3_start):
+#     se3_targets = []
+#     radius = 0.02
+#     sample = 25
 
-    se3_target = se3_start  # start at current pose
+#     se3_target = se3_start  # start at current pose
 
-    # move to start point of circle
-    se3_target = ua(SE3.Tx(radius) * se3_target, se3_targets)
+#     # move to start point of circle
+#     se3_target = ua(SE3.Tx(radius) * se3_target, se3_targets)
 
-    # move down toward the table before drawing
-    se3_target = ua(SE3.Tz(-descent) * se3_target, se3_targets)
+#     # move down toward the table before drawing
+#     se3_target = ua(SE3.Tz(-descent) * se3_target, se3_targets)
 
-    # --- draw circle ---
-    # se3_target = ua(place(se3_target), se3_targets)  # place marker close to page to draw
+#     # --- draw circle ---
+#     # se3_target = ua(place(se3_target), se3_targets)  # place marker close to page to draw
 
-    prev_x, prev_y = radius, 0
-    for theta in np.linspace(0, 2 * np.pi, sample, endpoint=True):
-        x = radius * np.cos(theta)
-        y = radius * np.sin(theta)
-        dx = x - prev_x
-        dy = y - prev_y
-        se3_target = ua(SE3.Tx(dx) * SE3.Ty(dy) * se3_target, se3_targets)
-        prev_x, prev_y = x, y
+#     prev_x, prev_y = radius, 0
+#     for theta in np.linspace(0, 2 * np.pi, sample, endpoint=True):
+#         x = radius * np.cos(theta)
+#         y = radius * np.sin(theta)
+#         dx = x - prev_x
+#         dy = y - prev_y
+#         se3_target = ua(SE3.Tx(dx) * SE3.Ty(dy) * se3_target, se3_targets)
+#         prev_x, prev_y = x, y
 
-    se3_target = ua(lift(se3_target), se3_targets)  # lift marker after drawing the page
+#     se3_target = ua(lift(se3_target), se3_targets)  # lift marker after drawing the page
 
-    # return to start pose
-    se3_targets.append(se3_start)
+#     # return to start pose
+#     se3_targets.append(se3_start)
 
-    return se3_targets   
+#     return se3_targets   
