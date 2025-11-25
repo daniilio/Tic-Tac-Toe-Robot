@@ -2,7 +2,6 @@ import random
 from app import BoardReader
 import cv2
 import time
-import pickle
 
 # change test_trajectory_real to test_trajectory_sim for simulation mode
 # import test_trajectory_real as ttr
