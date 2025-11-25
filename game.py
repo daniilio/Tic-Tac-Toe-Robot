@@ -37,7 +37,7 @@ class TicTacToeGame:
 
         self.board_reader = BoardReader()
 
-        self.cap = cv2.VideoCapture(0)
+        self.cap = cv2.VideoCapture(4)
         if not self.cap.isOpened():
             print("Error: Could not open camera.")
             return None
