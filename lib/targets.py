@@ -7,7 +7,7 @@ import numpy as np
 descent = 0.365
 near = 0.145
 # descent_near = 1 - near
-side_length = 0.18
+side_length = 0.09
 
 
 def lift(pos):
