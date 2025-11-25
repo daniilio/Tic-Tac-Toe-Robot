@@ -20,7 +20,7 @@ def new_robot():
     return robot, panda_rtb_model
 
 
-def make_trajectories_and_run(robot: RtbVisualizer, funcs, factors, filename, save=True):
+def make_trajectories_and_run(robot: RtbVisualizer, funcs, factors, filename="", save=False):
     motion_generator = RuckigMotionGenerator()
     
     q_start = robot.rtb_robot_model.q
@@ -56,7 +56,7 @@ def make_trajectories_and_run(robot: RtbVisualizer, funcs, factors, filename, sa
         run_on_robot(robot, q_trajs, dt)
 
 
-def joint_trajectory(robot: RtbVisualizer, q_target: np.array, filename, save=True):
+def joint_trajectory(robot: RtbVisualizer, q_target: np.array, filename="", save=False):
     motion_generator = RuckigMotionGenerator()
     q_start = robot.rtb_robot_model.q
     q_traj, dt = motion_generator.calculate_joint_pose_trajectory(q_start, 
@@ -65,9 +65,6 @@ def joint_trajectory(robot: RtbVisualizer, q_target: np.array, filename, save=Tr
                                                                   relative_acc_factor=0.1,
                                                                   relative_jerk_factor=0.5)
     if (save):
-        # yes_or_else = input("Save trajectories? (Y)\n")
-        # if (yes_or_else == "Y"):
-        #     filename = input("Enter a filename.\n")
         with open(f"trajectories/{filename}.pkl", "wb") as f:
             pickle.dump([q_traj], f)
         with open(f"trajectories/{filename}.dt.pkl", "wb") as f:
@@ -87,11 +84,26 @@ def run_on_robot(robot, q_trajs, dt):
         robot.run_joint_trajectory(q_traj, dt)
 
 
+def run_trajectory(robot, file_name):
+    # Find the trajectories from the files given
+    with open(f"trajectories/{file_name}.pkl", "rb") as f:
+        q_trajs = pickle.load(f)
+    with open(f"trajectories/{file_name}.dt.pkl", "rb") as f:
+        dt = pickle.load(f)
+    run_on_robot(robot, q_trajs, dt)
+
+
+# run upon initialization!
+def set_to_ready_position(robot, rtb_model):
+    q_target = rtb_model.qr
+    joint_trajectory(robot, q_target)
+
+
 if __name__ == "__main__":
     robot, rtb_model = new_robot()
     # First, we need to be in the ready position that the saved trajectories expect
     q_target = targets_joint.READY
-    joint_trajectory(robot, q_target, "", save=False)
+    joint_trajectory(robot, q_target)
 
     if (len(sys.argv) > 1):
         # Try to load trajectories
@@ -111,10 +123,19 @@ if __name__ == "__main__":
         # - From ready position, goes into drawing mode (a ready position that is closer to the board)
         # - From drawing mode, go back to ready position
 
+        # draw the board: READY to DRAWING THE BOARD to READY (because it returns back)
+        make_trajectories_and_run(
+            robot,
+            [targets.board],
+            [(0.2, 0.1, 0.5)],
+            "READY_to_BOARD_to_READY",
+            save=True
+        )
+
 
         # Go from READY to DRAWING_MODE first
         q_target = targets_joint.DRAWING_MODE
-        joint_trajectory(robot, q_target, "READY_to_DRAWING_MODE")
+        joint_trajectory(robot, q_target, "READY_to_DRAWING_MODE", save=True)
 
         # Horizontal strikes
         for idx, mode in zip([9, 6, 3], [targets.drawing_mode_9, targets.drawing_mode_6, targets.drawing_mode_3]):
@@ -122,16 +143,18 @@ if __name__ == "__main__":
                 robot,
                 [mode],
                 [(0.2, 0.1, 0.5)],
-                f"DRAWING_MODE_to_MODE_{idx}"
+                f"DRAWING_MODE_to_MODE_{idx}",
+                save=True
             )
             make_trajectories_and_run(
                 robot,
                 [targets.strike_horizontal],
                 [(0.2, 0.1, 0.5)],
-                f"MODE_{idx}_to_HORIZONTAL_{idx}"
+                f"MODE_{idx}_to_HORIZONTAL_{idx}",
+                save=True
             )
             q_target = targets_joint.DRAWING_MODE
-            joint_trajectory(robot, q_target, f"HORIZONTAL_{idx}_to_DRAWING_MODE")
+            joint_trajectory(robot, q_target, f"HORIZONTAL_{idx}_to_DRAWING_MODE", save=True)
 
         # Vertical strikes
         for idx, mode in zip([3, 2, 1], [targets.drawing_mode_3, targets.drawing_mode_2, targets.drawing_mode_1]):
@@ -139,16 +162,18 @@ if __name__ == "__main__":
                 robot,
                 [mode],
                 [(0.2, 0.1, 0.5)],
-                f"DRAWING_MODE_to_MODE_{idx}"
+                f"DRAWING_MODE_to_MODE_{idx}",
+                save=True
             )
             make_trajectories_and_run(
                 robot,
                 [targets.strike_vertical],
                 [(0.2, 0.1, 0.5)],
-                f"MODE_{idx}_to_VERTICAL_{idx}"
+                f"MODE_{idx}_to_VERTICAL_{idx}",
+                save=True
             )
             q_target = targets_joint.DRAWING_MODE
-            joint_trajectory(robot, q_target, f"VERTICAL_{idx}_to_DRAWING_MODE")
+            joint_trajectory(robot, q_target, f"VERTICAL_{idx}_to_DRAWING_MODE", save=True)
 
         # Diagonal strikes
         diagonal_modes = [
@@ -161,16 +186,18 @@ if __name__ == "__main__":
                 robot,
                 [mode],
                 [(0.2, 0.1, 0.5)],
-                f"DRAWING_MODE_to_MODE_{idx}"
+                f"DRAWING_MODE_to_MODE_{idx}",
+                save=True
             )
             make_trajectories_and_run(
                 robot,
                 [strike_func],
                 [(0.2, 0.1, 0.5)],
-                f"MODE_{idx}_to_DIAGONAL_{idx}"
+                f"MODE_{idx}_to_DIAGONAL_{idx}",
+                save=True
             )
             q_target = targets_joint.DRAWING_MODE
-            joint_trajectory(robot, q_target, f"DIAGONAL_{idx}_to_DRAWING_MODE")
+            joint_trajectory(robot, q_target, f"DIAGONAL_{idx}_to_DRAWING_MODE", save=True)
 
         # WILL BE AT DRAWING MODE NOW
 
@@ -183,24 +210,26 @@ if __name__ == "__main__":
                 robot,
                 [se3_func],
                 [(0.2, 0.1, 0.5)],
-                f"DRAWING_MODE_to_MODE_{i}"
+                f"DRAWING_MODE_to_MODE_{i}",
+                save=True
             )
 
             make_trajectories_and_run(
                 robot,
                 [targets.cross],
                 [(0.2, 0.1, 0.5)],
-                f"CROSS_{i}"
+                f"MODE_{i}_to_CROSS_{i}_to_MODE_{i}",
+                save=True
             )
 
             # Return to DRAWING_MODE after each drawing mode
             q_target = targets_joint.DRAWING_MODE
-            joint_trajectory(robot, q_target, f"MODE_{i}_to_DRAWING_MODE")
+            joint_trajectory(robot, q_target, f"MODE_{i}_to_DRAWING_MODE", save=True)
 
     
     # When done, return to the ready position
     q_target = targets_joint.READY
-    joint_trajectory(robot, q_target, "DRAWING_MODE_to_READY")
+    joint_trajectory(robot, q_target, "DRAWING_MODE_to_READY", save=True)
 
 
     robot.stop() # Makes sure render thread ends

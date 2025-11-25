@@ -2,6 +2,12 @@ import random
 from app import BoardReader
 import cv2
 import time
+import pickle
+
+# change test_trajectory_real to test_trajectory_sim for simulation mode
+# import test_trajectory_real as ttr
+import test_trajectory_sim as ttr
+
 
 X = 1
 O = 2
@@ -16,14 +22,27 @@ class TicTacToeGame:
     Human and robot players are represented as X=1, O=2, EMPTY=3.
     """
 
-    def __init__(self, robot = None):
+    def __init__(self, robot_playing=True):
         self.board = []
-        self.next_player = 1
-        self.robot_player = None
-        self.human_player = None
-        self.human_player2 = None
-        self.robot = robot
+        self.next_player = X
+        self.robot_player = X
+        self.human_player = O
+
+        if robot_playing:
+            self.robot, self.rtb_model = ttr.new_robot()
+            # set the robot to READY position
+            ttr.set_to_ready_position(self.robot, self.rtb_model)
+        else:
+            self.robot = None
+            self.rtb_model = None
+
         self.board_reader = BoardReader()
+
+        self.cap = cv2.VideoCapture(0)
+        if not self.cap.isOpened():
+            print("Error: Could not open camera.")
+            return None
+
 
     def get_user_move5(self) -> int:
         """
@@ -51,14 +70,16 @@ class TicTacToeGame:
         5. Returns the move index (0-8) if valid, otherwise -1.
         """
 
-        # ---------- Capture one frame from default camera ----------
-        cap = cv2.VideoCapture(0)
-        if not cap.isOpened():
-            print("Error: Could not open camera.")
-            return -1
+        # i moved this outside because opening the camera everytime could be slow
+        # # ---------- Capture one frame from default camera ----------
+        # cap = cv2.VideoCapture(0)
+        # if not cap.isOpened():
+        #     print("Error: Could not open camera.")
+        #     return -1
 
-        ret, frame = cap.read()
-        cap.release()
+        ret, frame = self.cap.read()
+        # cap.release()
+
 
         if not ret or frame is None:
             print("Error: Could not read frame from camera.")
@@ -141,8 +162,8 @@ class TicTacToeGame:
                 self.print_board()
                 user_move = -1
                 if use_camera:
-                    input("Press any key to confirm your move")
                     user_move = self.get_user_move5()
+                    input("Press the enter key to confirm your move")
                 if user_move == -1:
                     print("Cannot detect a correct move from camera.")
 
@@ -179,15 +200,31 @@ class TicTacToeGame:
                 robot_move = self.get_random_move()
                 if self.robot_player == X:
                     if self.robot is not None:
-                        self.robot.drawX(robot_move)
-                if self.robot_player == O:
-                    if self.robot is not None:
-                        self.robot.drawO(robot_move)
+                        # TODO: check the indexing here
+                        robot_move_traj = robot_move + 1  # different indexing from trajectory generation
+
+                        # set to drawing mode
+                        ttr.run_trajectory(self.robot, f"READY_to_DRAWING_MODE")
+                        # move to the correct mode 
+                        ttr.run_trajectory(self.robot, f"DRAWING_MODE_to_MODE_{robot_move_traj}")
+                        # draw the cross
+                        ttr.run_trajectory(self.robot, f"MODE_{robot_move_traj}_to_CROSS_{robot_move_traj}_to_MODE_{robot_move_traj}")
+                        # move back to drawing mode
+                        ttr.run_trajectory(self.robot, f"MODE_{robot_move_traj}_to_DRAWING_MODE")
+                        # move from the drawing mode to READY mode
+                        ttr.run_trajectory(self.robot, f"DRAWING_MODE_to_READY")
+
+                # ASSUME ROBOT IS X
+                # if self.robot_player == O:
+                #     if self.robot is not None:
+                #         self.robot.drawO(robot_move)
                 self.board[robot_move] = self.robot_player
                 print("Robot makes move: ", robot_move)
                 if self.is_game_over():
                     break
             self.next_player = 3 - self.next_player
+        
+        self.cap.release()
 
     def initialize_game(self):
         """
@@ -195,21 +232,23 @@ class TicTacToeGame:
         """
         self.board = [EMPTY] * 9
         if self.robot is not None:
-            self.robot.draw_board()
+            ttr.run_trajectory(self.robot, "READY_to_BOARD_to_READY")
 
-        print("Choose the side you wanna play: X or O")
-        while 1:
-            user_input = input()
-            if user_input == 'X' or user_input == 'x':
-                self.human_player = X
-                self.robot_player = O
-                break
-            elif user_input == 'O' or user_input == 'o':
-                self.human_player = O
-                self.robot_player = X
-                break
-            else:
-                print("Invalid input. Please input 'X' or 'O'.")
+        print("Human Player is O and Robot Player is X")
+
+        # print("Choose the side you wanna play: X or O")
+        # while 1:
+        #     user_input = input()
+        #     if user_input == 'X' or user_input == 'x':
+        #         self.human_player = X
+        #         self.robot_player = O
+        #         break
+        #     elif user_input == 'O' or user_input == 'o':
+        #         self.human_player = O
+        #         self.robot_player = X
+        #         break
+        #     else:
+        #         print("Invalid input. Please input 'X' or 'O'.")
 
     def get_random_move(self):
         """
@@ -226,8 +265,8 @@ class TicTacToeGame:
         """
         Return true iff a winner is found or no empty positions.
         """
-        if self.find_winner() != EMPTY:
-            winner = self.find_winner()
+        winner = self.find_winner()
+        if winner != EMPTY:
             if self.robot_player == winner:
                 print("Robot wins!")
             if self.human_player == winner:
@@ -246,25 +285,41 @@ class TicTacToeGame:
         """
         Return the winner of the game. If nobody wins, return EMPTY.
         """
-        winner_positions = [
+
+        # the following comments describe the strike system used to generate the trajectories
+
+        winner_positions = {
             # rows
-            (0, 1, 2),
-            (3, 4, 5),
-            (6, 7, 8),
+            (0, 1, 2): ("HORIZONTAL", 3),
+            (3, 4, 5): ("HORIZONTAL", 6),
+            (6, 7, 8): ("HORIZONTAL", 9),
+
             # columns
-            (0, 3, 6),
-            (1, 4, 7),
-            (2, 5, 8),
+            (0, 3, 6): ("VERTICAL", 1),
+            (1, 4, 7): ("VERTICAL", 2),
+            (2, 5, 8): ("VERTICAL", 3),
+
             # diagonals
-            (0, 4, 8),
-            (2, 4, 6)
-        ]
+            (0, 4, 8): ("DIAGONAL", 9),
+            (2, 4, 6): ("DIAGONAL", 7),
+        }
+
         winner = EMPTY
-        for (i, j, k) in winner_positions:
-            if self.board[i] == self.board[j] == self.board[k]:
-                if self.board[i] != EMPTY:
-                    winner = self.board[i]
-                    break
+        for (i, j, k), (strike_type, strike_mode) in winner_positions.items():
+            if self.board[i] == self.board[j] == self.board[k] != EMPTY:
+                winner = self.board[i]
+
+                # set to drawing mode
+                ttr.run_trajectory(self.robot, f"READY_to_DRAWING_MODE")
+                # move to the correct mode 
+                ttr.run_trajectory(self.robot, f"DRAWING_MODE_to_MODE_{strike_mode}")
+                # draw the strike
+                ttr.run_trajectory(self.robot, f"MODE_{strike_mode}_to_{strike_type}_{strike_mode}")
+                # move back to drawing mode
+                ttr.run_trajectory(self.robot, f"{strike_type}_{strike_mode}_to_DRAWING_MODE")
+                # move from the drawing mode to READY mode
+                ttr.run_trajectory(self.robot, f"DRAWING_MODE_to_READY")
+
         return winner
 
     def print_board(self, new_board=None):
@@ -294,7 +349,7 @@ class TicTacToeGame:
 
 
 if __name__ == "__main__":
-    game = TicTacToeGame()
+    game = TicTacToeGame(robot_playing=True)
     game.start_game(use_camera=False)
     # game.start_game(use_camera=True)
 
