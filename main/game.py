@@ -1,10 +1,10 @@
 import random
-from app import BoardReader
+from main.app import BoardReader
 import cv2
 import time
 
 # change test_trajectory_real to test_trajectory_sim for simulation mode
-import trajectory_lib as ttr
+import lib.trajectory_lib as ttr
 #import test_trajectory_sim as ttr
 
 

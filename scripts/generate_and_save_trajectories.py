@@ -1,8 +1,8 @@
-import trajectory_lib as ttr
+import lib.trajectory_lib as ttr
 import sys
 import pickle
-import targets
-import targets_joint
+import lib.targets as targets
+import lib.targets_joint as targets_joint
 
 
 if __name__ == "__main__":

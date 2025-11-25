@@ -6,8 +6,8 @@ import numpy as np
 
 from franka_api.motion_generator import RuckigMotionGenerator
 import csc376_bind_franky
-import targets
-import targets_joint
+import lib.targets as targets
+import lib.targets_joint as targets_joint
 
 np.set_printoptions(precision=4, suppress=True,)  
 
