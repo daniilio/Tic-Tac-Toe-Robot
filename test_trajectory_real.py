@@ -18,9 +18,11 @@ def new_robot():
     return robot, rtb_model
 
 
-def make_trajectories_and_run(robot: csc376_bind_franky.FrankaJointTrajectoryController,
-                              rtb_model: rtb.models.Panda, funcs, factors, filename="", save=False):
+# def make_trajectories_and_run(robot: csc376_bind_franky.FrankaJointTrajectoryController,
+#                               rtb_model: rtb.models.Panda, funcs, factors, filename="", save=False):
     
+def make_trajectories_and_run(robot: csc376_bind_franky.FrankaJointTrajectoryController, funcs, factors, filename="", save=False):
+
     motion_generator = RuckigMotionGenerator()
     
     q_start =  robot.get_current_joint_positions()
@@ -47,7 +49,6 @@ def make_trajectories_and_run(robot: csc376_bind_franky.FrankaJointTrajectoryCon
 
         print(f"Took {end_time - start_time} seconds to compute trajectories.")
         if (save):
-            filename = input("Enter a filename.\n")
             with open(f"trajectories/{filename}.pkl", "wb") as f:
                 pickle.dump(q_trajs, f)
             with open(f"trajectories/{filename}.dt.pkl", "wb") as f:
@@ -124,10 +125,13 @@ if __name__ == "__main__":
         # - From drawing mode, go back to ready position
 
         # draw the board: READY to DRAWING THE BOARD to READY (because it returns back)
+        factors=(0.02, 0.01, 0.05)
+
+
         make_trajectories_and_run(
             robot,
             [targets.board],
-            [(0.2, 0.1, 0.5)],
+            [factors],
             "READY_to_BOARD_to_READY",
             save=True
         )
@@ -142,14 +146,14 @@ if __name__ == "__main__":
             make_trajectories_and_run(
                 robot,
                 [mode],
-                [(0.2, 0.1, 0.5)],
+                [factors],
                 f"DRAWING_MODE_to_MODE_{idx}",
                 save=True
             )
             make_trajectories_and_run(
                 robot,
                 [targets.strike_horizontal],
-                [(0.2, 0.1, 0.5)],
+                [factors],
                 f"MODE_{idx}_to_HORIZONTAL_{idx}",
                 save=True
             )
@@ -161,14 +165,14 @@ if __name__ == "__main__":
             make_trajectories_and_run(
                 robot,
                 [mode],
-                [(0.2, 0.1, 0.5)],
+                [factors],
                 f"DRAWING_MODE_to_MODE_{idx}",
                 save=True
             )
             make_trajectories_and_run(
                 robot,
                 [targets.strike_vertical],
-                [(0.2, 0.1, 0.5)],
+                [factors],
                 f"MODE_{idx}_to_VERTICAL_{idx}",
                 save=True
             )
@@ -185,14 +189,14 @@ if __name__ == "__main__":
             make_trajectories_and_run(
                 robot,
                 [mode],
-                [(0.2, 0.1, 0.5)],
+                [factors],
                 f"DRAWING_MODE_to_MODE_{idx}",
                 save=True
             )
             make_trajectories_and_run(
                 robot,
                 [strike_func],
-                [(0.2, 0.1, 0.5)],
+                [factors],
                 f"MODE_{idx}_to_DIAGONAL_{idx}",
                 save=True
             )
@@ -209,7 +213,7 @@ if __name__ == "__main__":
             make_trajectories_and_run(
                 robot,
                 [se3_func],
-                [(0.2, 0.1, 0.5)],
+                [factors],
                 f"DRAWING_MODE_to_MODE_{i}",
                 save=True
             )
@@ -217,7 +221,7 @@ if __name__ == "__main__":
             make_trajectories_and_run(
                 robot,
                 [targets.cross],
-                [(0.2, 0.1, 0.5)],
+                [factors],
                 f"MODE_{i}_to_CROSS_{i}_to_MODE_{i}",
                 save=True
             )

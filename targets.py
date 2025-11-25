@@ -4,9 +4,9 @@
 from spatialmath import SE3
 import numpy as np
 
-descent = 0.328
-near = 0.1
-descent_near = descent - near
+descent = 0.365
+near = 0.145
+# descent_near = 1 - near
 side_length = 0.18
 
 
@@ -41,13 +41,13 @@ def test_targets(se3_start):
     return se3_targets
 
 
-def drawing_mode(se3_start):
-    se3_targets = []
-    se3_target = se3_start
+# def drawing_mode(se3_start):
+#     se3_targets = []
+#     se3_target = se3_start
 
-    se3_target = ua(SE3.Tz(-descent_near) * SE3.Tx(side_length/2) * SE3.Ty(side_length/2) * se3_target, se3_targets)
+#     se3_target = ua(SE3.Tz(-descent_near) * SE3.Tx(side_length/2) * SE3.Ty(side_length/2) * se3_target, se3_targets)
     
-    return se3_targets
+#     return se3_targets
 
 
 def drawing_mode_1(se3_start):
@@ -173,7 +173,7 @@ def strike_horizontal(se3_start):
     se3_target = ua(SE3.Tz(-near) * se3_target, se3_targets)
 
     # draw the strike
-    se3_target = ua(SE3.Ty(side_length * (4 / 6)) * se3_target, se3_targets)
+    se3_target = ua(SE3.Ty(side_length * (4 / 6) + 0.02) * se3_target, se3_targets)
 
     # lift the marker off the paper
     se3_target = ua(lift(se3_target), se3_targets)
@@ -189,7 +189,7 @@ def strike_vertical(se3_start):
     se3_target = ua(SE3.Tz(-near) * se3_target, se3_targets)
 
     # draw the strike
-    se3_target = ua(SE3.Tx(-side_length * (4 / 6)) * se3_target, se3_targets)
+    se3_target = ua(SE3.Tx(-(side_length * (4 / 6) + 0.02)) * se3_target, se3_targets)
 
     # lift the marker off the paper
     se3_target = ua(lift(se3_target), se3_targets)
@@ -205,7 +205,7 @@ def strike_diagonal_from_9(se3_start):
     se3_target = ua(SE3.Tz(-near) * se3_target, se3_targets)
 
     # draw the strike
-    se3_target = ua(SE3.Tx(side_length * (4 / 6)) * SE3.Ty(side_length * (4 / 6)) * se3_target, se3_targets)
+    se3_target = ua(SE3.Tx(side_length * (4 / 6) + 0.02) * SE3.Ty(side_length * (4 / 6) + 0.02) * se3_target, se3_targets)
 
     # lift the marker off the paper
     se3_target = ua(lift(se3_target), se3_targets)
@@ -221,7 +221,7 @@ def strike_diagonal_from_7(se3_start):
     se3_target = ua(SE3.Tz(-near) * se3_target, se3_targets)
 
     # draw the strike
-    se3_target = ua(SE3.Tx(side_length * (4 / 6)) * SE3.Ty(-side_length * (4 / 6)) * se3_target, se3_targets)
+    se3_target = ua(SE3.Tx(side_length * (4 / 6) + 0.02) * SE3.Ty(-(side_length * (4 / 6) + 0.02)) * se3_target, se3_targets)
 
     # lift the marker off the paper
     se3_target = ua(lift(se3_target), se3_targets)
@@ -303,12 +303,11 @@ def ee_init(se3_start):
 
 def cross(se3_start):
     se3_targets = []
-    length = 0.113
 
     se3_target = se3_start  # start at current pose
 
     # move to start point of cross
-    cross_height = length * np.cos(np.pi / 4)
+    cross_height = (side_length / 3 - 0.02) * np.cos(np.pi / 4)
 
     se3_target = ua(SE3.Tx(cross_height / 2) * SE3.Ty(cross_height / 2) * se3_target, se3_targets)
 
