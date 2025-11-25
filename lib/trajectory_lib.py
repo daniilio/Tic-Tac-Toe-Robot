@@ -18,10 +18,8 @@ def new_robot():
     return robot, rtb_model
 
 
-# def make_trajectories_and_run(robot: csc376_bind_franky.FrankaJointTrajectoryController,
-#                               rtb_model: rtb.models.Panda, funcs, factors, filename="", save=False):
-    
-def make_trajectories_and_run(robot: csc376_bind_franky.FrankaJointTrajectoryController, funcs, factors, filename="", save=False):
+def make_trajectories_and_run(robot: csc376_bind_franky.FrankaJointTrajectoryController,
+                               rtb_model: rtb.models.Panda, funcs, factors, filename="", save=False):
 
     motion_generator = RuckigMotionGenerator()
     

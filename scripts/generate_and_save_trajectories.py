@@ -33,6 +33,7 @@ if __name__ == "__main__":
 
         ttr.make_trajectories_and_run(
             robot,
+            rtb_model,
             [targets.board],
             [factors],
             "READY_to_BOARD_to_READY",
@@ -48,6 +49,7 @@ if __name__ == "__main__":
         for idx, mode in zip([9, 6, 3], [targets.drawing_mode_9, targets.drawing_mode_6, targets.drawing_mode_3]):
             ttr.make_trajectories_and_run(
                 robot,
+                rtb_model,
                 [mode],
                 [factors],
                 f"DRAWING_MODE_to_MODE_{idx}",
@@ -55,6 +57,7 @@ if __name__ == "__main__":
             )
             ttr.make_trajectories_and_run(
                 robot,
+                rtb_model,
                 [targets.strike_horizontal],
                 [factors],
                 f"MODE_{idx}_to_HORIZONTAL_{idx}",
@@ -67,6 +70,7 @@ if __name__ == "__main__":
         for idx, mode in zip([3, 2, 1], [targets.drawing_mode_3, targets.drawing_mode_2, targets.drawing_mode_1]):
             ttr.make_trajectories_and_run(
                 robot,
+                rtb_model,
                 [mode],
                 [factors],
                 f"DRAWING_MODE_to_MODE_{idx}",
@@ -74,6 +78,7 @@ if __name__ == "__main__":
             )
             ttr.make_trajectories_and_run(
                 robot,
+                rtb_model,
                 [targets.strike_vertical],
                 [factors],
                 f"MODE_{idx}_to_VERTICAL_{idx}",
@@ -91,6 +96,7 @@ if __name__ == "__main__":
         for idx, mode, strike_func in diagonal_modes:
             ttr.make_trajectories_and_run(
                 robot,
+                rtb_model,
                 [mode],
                 [factors],
                 f"DRAWING_MODE_to_MODE_{idx}",
@@ -98,6 +104,7 @@ if __name__ == "__main__":
             )
             ttr.make_trajectories_and_run(
                 robot,
+                rtb_model,
                 [strike_func],
                 [factors],
                 f"MODE_{idx}_to_DIAGONAL_{idx}",
@@ -115,6 +122,7 @@ if __name__ == "__main__":
 
             ttr.make_trajectories_and_run(
                 robot,
+                rtb_model,
                 [se3_func],
                 [factors],
                 f"DRAWING_MODE_to_MODE_{i}",
@@ -123,6 +131,7 @@ if __name__ == "__main__":
 
             ttr.make_trajectories_and_run(
                 robot,
+                rtb_model,
                 [targets.cross],
                 [factors],
                 f"MODE_{i}_to_CROSS_{i}_to_MODE_{i}",
