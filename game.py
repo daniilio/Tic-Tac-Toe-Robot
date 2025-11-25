@@ -4,8 +4,8 @@ import cv2
 import time
 
 # change test_trajectory_real to test_trajectory_sim for simulation mode
-# import test_trajectory_real as ttr
-import test_trajectory_sim as ttr
+import test_trajectory_real as ttr
+#import test_trajectory_sim as ttr
 
 
 X = 1
@@ -349,6 +349,6 @@ class TicTacToeGame:
 
 if __name__ == "__main__":
     game = TicTacToeGame(robot_playing=True)
-    game.start_game(use_camera=False)
-    # game.start_game(use_camera=True)
+    #game.start_game(use_camera=False)
+    game.start_game(use_camera=True)
 

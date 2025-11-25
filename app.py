@@ -87,7 +87,7 @@ class BoardReader:
             bbox = cv2.boundingRect(approx)
             aspect_ratio = float(bbox[2] / bbox[3])
             # We are looking for squares of reasonable size
-            if 0.8 < aspect_ratio < 1.2 and area > 100:
+            if 0.8 < aspect_ratio < 1.2 and area > 50:
                 squares.append(approx)
 
         # We now have all squares, but we need to filter them to find the 9 board squares
@@ -155,7 +155,7 @@ class BoardReader:
                     minDist=20,
                     param1=50,
                     param2=15,
-                    minRadius=10,
+                    minRadius=15,
                 )
                 if circles is not None:
                     marks.append(self.Marks.O)
