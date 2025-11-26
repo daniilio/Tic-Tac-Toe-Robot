@@ -37,9 +37,9 @@ class BoardReader:
     def read_board(self, frame: cv2.typing.MatLike):
         squares = self.find_squares(frame)
         self.visualize_squares(frame, squares)
-        marks = self.detect_marks(frame, squares)
+        marks = self.detect_non_empty_squares(frame, squares)
         # print marks as a grid
-        self.print_board(marks)
+        print(marks)
 
     def print_board(self, marks):
         if not marks:
@@ -68,16 +68,27 @@ class BoardReader:
         cv2.imshow("Board Detection", empty_board)
 
     def find_squares(self, frame: cv2.typing.MatLike):
-        imgray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-        ret, thresh = cv2.threshold(imgray, 127, 255, 0)
+        gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+        blurred = cv2.GaussianBlur(gray, (5, 5), 0)
+        ret, thresh = cv2.threshold(blurred, 127, 255, 0)
         if not ret:
             raise ValueError("Thresholding failed")
         contours, _ = cv2.findContours(thresh, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+        # visualize contours for debugging
+        contour_img = np.zeros_like(frame)
+        cv2.drawContours(contour_img, contours, -1, (0, 255, 0), 2)
+        cv2.imshow("Contours", contour_img)
+
+        # Image for showing all the polygons
+        polygon_img = np.zeros_like(frame)
+        # Image for showing detected squares and their areas
+        square_img = np.zeros_like(frame)
 
         squares = []
         for contour in contours:
-            epsilon = 0.02 * cv2.arcLength(contour, True)
+            epsilon = 0.035 * cv2.arcLength(contour, True)
             approx = cv2.approxPolyDP(contour, epsilon, True)
+            cv2.drawContours(polygon_img, [approx], -1, (255, 0, 0), 2)
 
             # We are looking for rectangles
             if len(approx) != 4:
@@ -89,6 +100,20 @@ class BoardReader:
             # We are looking for squares of reasonable size
             if 0.8 < aspect_ratio < 1.2 and area > 50:
                 squares.append(approx)
+                cv2.drawContours(square_img, [approx], -1, (0, 0, 255), 2)
+                cv2.putText(
+                    square_img,
+                    f"{int(area)}",
+                    (bbox[0], bbox[1] + 30),
+                    cv2.FONT_HERSHEY_SIMPLEX,
+                    1,
+                    (0, 255, 0),
+                    2,
+                )
+
+        cv2.imshow("Contour Polygons", polygon_img)
+        cv2.imshow("Detected Squares", square_img)
+
 
         # We now have all squares, but we need to filter them to find the 9 board squares
         # We assume the board squares will have similar areas, so we are looking for
@@ -167,6 +192,29 @@ class BoardReader:
                     marks.append(self.Marks.X)
 
         return marks
+    
+    def detect_non_empty_squares(self, frame: cv2.typing.MatLike, squares):
+        gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+        blurred = cv2.GaussianBlur(gray, (5, 5), 0)
+        _, thresh = cv2.threshold(blurred, 127, 255, 1)
+
+        non_empty_squares = []
+        for i, sq in enumerate(squares):
+            mask = np.zeros((thresh.shape), dtype=np.uint8)
+            cv2.fillPoly(mask, [sq], 255)
+            cell = cv2.bitwise_and(thresh, thresh, mask=mask)
+            x, y, w, h = cv2.boundingRect(sq)
+            w = int(0.9 * w)
+            h = int(0.9 * h)
+            cell = cell[y : y + h, x : x + w]
+
+            non_zero_count = cv2.countNonZero(cell)
+            total_pixels = cell.size
+            fill_ratio = non_zero_count / total_pixels
+            if fill_ratio >= 0.015:
+                non_empty_squares.append(i)
+
+        return non_empty_squares
 
 
 class FrameSource(Enum):
