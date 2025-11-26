@@ -45,7 +45,7 @@ class TicTacToeGame:
         """
         Get user move 5 times in 1 second.
         """
-        for _ in range(100):
+        for _ in range(5):
             user_move = self.get_user_move()
             if user_move != -1:
                 return user_move
@@ -73,8 +73,10 @@ class TicTacToeGame:
         # if not cap.isOpened():
         #     print("Error: Could not open camera.")
         #     return -1
-
+        
         ret, frame = self.cap.read()
+        for i in range(30):
+            ret, frame = self.cap.read()
         # cap.release()
 
 
@@ -354,5 +356,6 @@ class TicTacToeGame:
 if __name__ == "__main__":
     game = TicTacToeGame(robot_playing=True)
     #game.start_game(use_camera=False)
-    game.start_game(use_camera=True, state=[EMPTY]*9, next_player=X)
+    game.start_game(use_camera=True, state=[] + [EMPTY] * 9, next_player=X)
+
 

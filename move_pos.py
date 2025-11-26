@@ -3,7 +3,7 @@ from franka_api.motion_generator import RuckigMotionGenerator
 import roboticstoolbox as rtb
 import targets_joint
 
-TARGET_JOINTS = targets_joint.READY
+TARGET_JOINTS = targets_joint.CAMERA_MODE
 
 motion_generator = RuckigMotionGenerator()
 rtb_model = rtb.models.Panda()

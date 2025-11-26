@@ -39,7 +39,10 @@ class BoardReader:
 
     def read_board(self, frame: cv2.typing.MatLike):
         squares = self.find_squares(frame)
-        self.detect_single_square_change(frame, squares, ignore_squares=[])
+        if len(squares) != 9:
+            return []
+        v = self.detect_single_square_change(frame, squares, ignore_squares=[])
+        print(v)
 
     def print_board(self, marks):
         if not marks:
@@ -112,6 +115,7 @@ class BoardReader:
                     (0, 255, 0),
                     2,
                 )
+                print(bbox[0], bbox[1])
 
         cv2.imshow("Contour Polygons", polygon_img)
         cv2.imshow("Detected Squares", square_img)
@@ -164,8 +168,8 @@ class BoardReader:
             cv2.fillPoly(mask, [sq], 255)
             cell = cv2.bitwise_and(thresh, thresh, mask=mask)
             x, y, w, h = cv2.boundingRect(sq)
-            w = int(0.9 * w)
-            h = int(0.9 * h)
+            w = int(0.95 * w)
+            h = int(0.95 * h)
             cell = cell[y : y + h, x : x + w]
 
             non_zero_count = cv2.countNonZero(cell)
@@ -178,6 +182,12 @@ class BoardReader:
     
     def detect_single_square_change(self, frame: cv2.typing.MatLike, squares, ignore_squares):
         current_fill_ratios = self.get_square_fill_ratios(frame, squares)
+        sort_fill_ratios = sorted(enumerate(current_fill_ratios), key=lambda x: x[1], reverse=True)
+        for i, ratio in sort_fill_ratios:
+            if i in ignore_squares:
+                continue
+            return i
+
         changes = [0.0] * len(current_fill_ratios)
         for i in range(len(current_fill_ratios)):
             if i in ignore_squares:
