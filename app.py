@@ -98,7 +98,7 @@ class BoardReader:
             bbox = cv2.boundingRect(approx)
             aspect_ratio = float(bbox[2] / bbox[3])
             # We are looking for squares of reasonable size
-            if 0.8 < aspect_ratio < 1.2 and area > 50:
+            if 0.8 < aspect_ratio < 1.2 and area > 2000:
                 squares.append(approx)
                 cv2.drawContours(square_img, [approx], -1, (0, 0, 255), 2)
                 cv2.putText(
@@ -243,6 +243,8 @@ class RobotController:
 
         while True:
             frame = self.get_frame()
+            #cv2.imwrite("idk.jpg", frame)
+            #exit(0)
             frame = self.process_frame(frame)
 
             # Display the resulting frame
