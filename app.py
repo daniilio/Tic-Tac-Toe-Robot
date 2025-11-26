@@ -68,7 +68,7 @@ class BoardReader:
                 (0, 0, 0),
                 2,
             )
-        cv2.imshow("Board Detection", empty_board)
+        #cv2.imshow("Board Detection", empty_board)
 
     def find_squares(self, frame: cv2.typing.MatLike):
         gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
@@ -82,7 +82,7 @@ class BoardReader:
         # visualize contours for debugging
         contour_img = np.zeros_like(frame)
         cv2.drawContours(contour_img, contours, -1, (0, 255, 0), 2)
-        cv2.imshow("Contours", contour_img)
+        #cv2.imshow("Contours", contour_img)
 
         # Image for showing all the polygons
         polygon_img = np.zeros_like(frame)
@@ -117,8 +117,8 @@ class BoardReader:
                 )
                 print(bbox[0], bbox[1])
 
-        cv2.imshow("Contour Polygons", polygon_img)
-        cv2.imshow("Detected Squares", square_img)
+        #cv2.imshow("Contour Polygons", polygon_img)
+        #cv2.imshow("Detected Squares", square_img)
 
         # We now have all squares, but we need to filter them to find the 9 board squares
         # We assume the board squares will have similar areas, so we are looking for
@@ -227,7 +227,7 @@ class RobotController:
             frame = self.process_frame(frame)
 
             # Display the resulting frame
-            cv2.imshow("Video Feed", frame)
+            #cv2.imshow("Video Feed", frame)
 
             self.take_action()
 
