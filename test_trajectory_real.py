@@ -97,7 +97,7 @@ def run_trajectory(robot, file_name):
 
 # run upon initialization!
 def set_to_ready_position(robot, rtb_model):
-    q_target = rtb_model.qr
+    q_target = targets_joint.READY
     joint_trajectory(robot, q_target)
 
     # # set to camera position
@@ -109,7 +109,7 @@ if __name__ == "__main__":
     robot, rtb_model = new_robot()
 
     # First, we need to be in the ready position that the saved trajectories expect
-    q_target = rtb_model.qr
+    q_target = targets_joint.READY
     joint_trajectory(robot, q_target)
 
     if (len(sys.argv) > 1):
