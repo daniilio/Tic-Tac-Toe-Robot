@@ -131,7 +131,7 @@ if __name__ == "__main__":
             robot,
             [targets.board],
             [factors],
-            "READY_to_BOARD_to_READY",
+            "READY_to_BOARD",
             save=True
         )
 

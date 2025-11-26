@@ -7,7 +7,7 @@ import numpy as np
 descent = 0.365
 near = 0.13
 # descent_near = 1 - near
-side_length = 0.18
+side_length = 0.09
 
 
 def lift(pos):
@@ -274,7 +274,7 @@ def board(se3_start):
     se3_target = ua(SE3.Tx(-side_length) * se3_target, se3_targets)
     se3_target = ua(lift(se3_target), se3_targets)
 
-    se3_targets.append(se3_start)
+    # se3_targets.append(se3_start)
 
     return se3_targets
 
