@@ -95,19 +95,17 @@ class TicTacToeGame:
             print(f"Error: Expected 9 squares, but got {len(squares)}.")
             return -1
 
-        marks = self.board_reader.detect_marks(frame, squares)
-        if len(marks) != 9:
-            print(f"Error: Expected 9 marks, but got {len(marks)}.")
-            return -1
+        filled_cells = self.board_reader.detect_non_empty_squares(frame, squares)
+        print("Camera feed detected cells " + ", ".join([str(c) for c in filled_cells]) + " as filled.")
 
-        new_board = []
-        for m in marks:
-            if m == BoardReader.Marks.X:
-                new_board.append(X)
-            elif m == BoardReader.Marks.O:
-                new_board.append(O)
-            else:
-                new_board.append(EMPTY)
+        new_board = self.board.copy()
+        for filled_cell_i in filled_cells:
+            curr_val = self.board[filled_cell_i]
+            if curr_val != 3: # I don't know why BoardReader.Marks.Empty is not working here
+                # We don't care if the cell's prev value is not empty, because we assume the prev value is true
+                continue
+            # Human only plays O, if the cell was previously empty and now it is filled, it must be O
+            new_board[filled_cell_i] = 2 # I don't know why BoardReader.Marks.O is not working here
 
         print("Old board:")
         self.print_board()
@@ -120,6 +118,7 @@ class TicTacToeGame:
             return -1
 
         # ---------- Compare new_board with self.board ----------
+        print(self.board, new_board)
         diff_indices = []
         for i, (old, new) in enumerate(zip(self.board, new_board)):
             if old != new:
