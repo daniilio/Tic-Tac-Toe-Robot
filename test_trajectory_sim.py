@@ -20,7 +20,11 @@ def new_robot():
     return robot, panda_rtb_model
 
 
+# def make_trajectories_and_run(robot: csc376_bind_franky.FrankaJointTrajectoryController,
+#                               rtb_model: rtb.models.Panda, funcs, factors, filename="", save=False):
+    
 def make_trajectories_and_run(robot: RtbVisualizer, funcs, factors, filename="", save=False):
+
     motion_generator = RuckigMotionGenerator()
     
     q_start = robot.rtb_robot_model.q
@@ -38,6 +42,8 @@ def make_trajectories_and_run(robot: RtbVisualizer, funcs, factors, filename="",
             cartesian_traj, dt = motion_generator.calculate_cartesian_pose_trajectory(se3_current, se3_target,
                                                                                     factors[i][0], factors[i][1], factors[i][2]) 
             q_traj = motion_generator.cartesian_pose_to_joint_trajectory(rtb_model, q_current, cartesian_traj)
+            if len(q_traj) == 1:
+                q_traj = [q_current, q_traj[0]]
             q_trajs.append(q_traj)
             se3_current = se3_target
             q_current = q_traj[-1]
@@ -45,9 +51,6 @@ def make_trajectories_and_run(robot: RtbVisualizer, funcs, factors, filename="",
 
         print(f"Took {end_time - start_time} seconds to compute trajectories.")
         if (save):
-            # yes_or_else = input("Save trajectories? (Y)\n")
-            # if (yes_or_else == "Y"):
-            #     filename = input("Enter a filename.\n")
             with open(f"trajectories/{filename}.pkl", "wb") as f:
                 pickle.dump(q_trajs, f)
             with open(f"trajectories/{filename}.dt.pkl", "wb") as f:
@@ -101,16 +104,14 @@ def set_to_ready_position(robot, rtb_model):
 
 if __name__ == "__main__":
     robot, rtb_model = new_robot()
+
     # First, we need to be in the ready position that the saved trajectories expect
     q_target = targets_joint.READY
     joint_trajectory(robot, q_target)
 
     if (len(sys.argv) > 1):
         # Try to load trajectories
-
         for i in range(1, len(sys.argv)):
-            q_target = targets_joint.DRAWING_MODE
-            joint_trajectory(robot, q_target)
             # Find the trajectories from the files given
             with open(f"trajectories/{sys.argv[i]}.pkl", "rb") as f:
                 q_trajs = pickle.load(f)
@@ -118,16 +119,18 @@ if __name__ == "__main__":
                 dt = pickle.load(f)
             run_on_robot(robot, q_trajs, dt)
     else:
-        # Does the following: 
+       # Does the following: 
         # - From ready position, draws the board, then goes back to the ready position. 
         # - From ready position, goes into drawing mode (a ready position that is closer to the board)
         # - From drawing mode, go back to ready position
 
         # draw the board: READY to DRAWING THE BOARD to READY (because it returns back)
+        factors=(0.02, 0.01, 0.05)
+
         make_trajectories_and_run(
             robot,
             [targets.board],
-            [(0.2, 0.1, 0.5)],
+            [factors],
             "READY_to_BOARD_to_READY",
             save=True
         )
@@ -137,19 +140,19 @@ if __name__ == "__main__":
         q_target = targets_joint.DRAWING_MODE
         joint_trajectory(robot, q_target, "READY_to_DRAWING_MODE", save=True)
 
-        # Horizontal strikes
+        # # Horizontal strikes
         for idx, mode in zip([9, 6, 3], [targets.drawing_mode_9, targets.drawing_mode_6, targets.drawing_mode_3]):
             make_trajectories_and_run(
                 robot,
                 [mode],
-                [(0.2, 0.1, 0.5)],
+                [factors],
                 f"DRAWING_MODE_to_MODE_{idx}",
                 save=True
             )
             make_trajectories_and_run(
                 robot,
                 [targets.strike_horizontal],
-                [(0.2, 0.1, 0.5)],
+                [factors],
                 f"MODE_{idx}_to_HORIZONTAL_{idx}",
                 save=True
             )
@@ -161,14 +164,14 @@ if __name__ == "__main__":
             make_trajectories_and_run(
                 robot,
                 [mode],
-                [(0.2, 0.1, 0.5)],
+                [factors],
                 f"DRAWING_MODE_to_MODE_{idx}",
                 save=True
             )
             make_trajectories_and_run(
                 robot,
                 [targets.strike_vertical],
-                [(0.2, 0.1, 0.5)],
+                [factors],
                 f"MODE_{idx}_to_VERTICAL_{idx}",
                 save=True
             )
@@ -185,14 +188,14 @@ if __name__ == "__main__":
             make_trajectories_and_run(
                 robot,
                 [mode],
-                [(0.2, 0.1, 0.5)],
+                [factors],
                 f"DRAWING_MODE_to_MODE_{idx}",
                 save=True
             )
             make_trajectories_and_run(
                 robot,
                 [strike_func],
-                [(0.2, 0.1, 0.5)],
+                [factors],
                 f"MODE_{idx}_to_DIAGONAL_{idx}",
                 save=True
             )
@@ -209,7 +212,7 @@ if __name__ == "__main__":
             make_trajectories_and_run(
                 robot,
                 [se3_func],
-                [(0.2, 0.1, 0.5)],
+                [factors],
                 f"DRAWING_MODE_to_MODE_{i}",
                 save=True
             )
@@ -217,7 +220,7 @@ if __name__ == "__main__":
             make_trajectories_and_run(
                 robot,
                 [targets.cross],
-                [(0.2, 0.1, 0.5)],
+                [factors],
                 f"MODE_{i}_to_CROSS_{i}_to_MODE_{i}",
                 save=True
             )
@@ -231,7 +234,15 @@ if __name__ == "__main__":
     q_target = targets_joint.READY
     joint_trajectory(robot, q_target, "DRAWING_MODE_to_READY", save=True)
 
+    # go to CAMERA_MODE from READY
+    q_target = targets_joint.CAMERA_MODE
+    joint_trajectory(robot, q_target, "READY_to_CAMERA_MODE", save=True)
+    
+    # go to READY from CAMERA_MODE
+    q_target = targets_joint.READY
+    joint_trajectory(robot, q_target, "CAMERA_MODE_to_READY", save=True)
 
-    robot.stop() # Makes sure render thread ends
+    robot.stop()
+
 
 
