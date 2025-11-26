@@ -135,6 +135,7 @@ if __name__ == "__main__":
             save=True
         )
 
+        # Whenever we run cartesian trajectories, we need to go back to READY manually
         set_to_ready_position(robot, rtb_model)
 
         # Go from READY to DRAWING_MODE first
