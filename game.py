@@ -1,5 +1,5 @@
 import random
-from app import BoardReader
+from old_app import BoardReader
 import cv2
 import time
 
@@ -182,7 +182,7 @@ class TicTacToeGame:
                 self.board[user_move] = self.human_player
 
             elif self.next_player == self.robot_player:
-                
+
                 robot_move = self.get_random_move()
                 current_joint_pos =  self.robot.get_current_joint_positions()
                 print(f"Robot's turn. Moving to {robot_move}, current joint position: {current_joint_pos}")
@@ -195,14 +195,14 @@ class TicTacToeGame:
                         print("Moving to DRAWING mode")
                         ttr.joint_trajectory(self.robot, targets_joint.DRAWING_MODE)
 
-                        # move to the correct mode 
+                        # move to the correct mode
                         print("Moving from DRAWING -> GRID SLOT")
                         ttr.run_trajectory(self.robot, f"DRAWING_MODE_to_MODE_{robot_move_traj}")
 
                         # draw the cross
                         print("Drawing X on GRID SLOT")
                         ttr.run_trajectory(self.robot, f"MODE_{robot_move_traj}_to_CROSS_{robot_move_traj}_to_MODE_{robot_move_traj}")
-                        
+
                         # move to camera mode
                         ttr.joint_trajectory(self.robot, targets_joint.CAMERA_MODE)
 
@@ -215,10 +215,10 @@ class TicTacToeGame:
                 #         self.robot.drawO(robot_move)
                 self.board[robot_move] = self.robot_player
                 print("Robot makes move: ", robot_move)
-                if self.is_game_over(): 
+                if self.is_game_over():
                     break
             self.next_player = 3 - self.next_player
-        
+
         self.cap.release()
 
     def initialize_game(self, state, next_player):
@@ -313,12 +313,12 @@ class TicTacToeGame:
                 # set to drawing mode
                 ttr.joint_trajectory(self.robot, targets_joint.DRAWING_MODE)
 
-                # move to the correct mode 
+                # move to the correct mode
                 ttr.run_trajectory(self.robot, f"DRAWING_MODE_to_MODE_{strike_mode}")
 
                 # draw the strike
                 ttr.run_trajectory(self.robot, f"MODE_{strike_mode}_to_{strike_type}_{strike_mode}")
-                
+
                 # Game is done, go to robot ready pose for now
                 ttr.joint_trajectory(self.robot, targets_joint.READY)
 
