@@ -231,8 +231,9 @@ class TicTacToeGame:
             self.board = [EMPTY] * 9
         self.next_player = next_player
         if self.robot is not None and self.board == [EMPTY] * 9:
-            ttr.run_trajectory(self.robot, "READY_to_BOARD_to_READY")
-            ttr.run_trajectory(self.robot, "READY_to_CAMERA_MODE")
+            ttr.set_to_ready_position(self.robot, self.rtb_model)
+            ttr.run_trajectory(self.robot, "READY_to_BOARD")
+            ttr.set_to_ready_position(self.robot, self.rtb_model)
 
         print("Human Player is O and Robot Player is X")
 
