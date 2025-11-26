@@ -47,7 +47,7 @@ class TicTacToeGame:
         """
         Get user move 5 times in 1 second.
         """
-        for _ in range(5):
+        for _ in range(100):
             user_move = self.get_user_move()
             if user_move != -1:
                 return user_move
@@ -201,6 +201,8 @@ class TicTacToeGame:
                         # TODO: check the indexing here
                         robot_move_traj = robot_move + 1  # different indexing from trajectory generation
 
+                        # set to READY mode
+                        ttr.run_trajectory(self.robot, f"CAMERA_MODE_to_READY")
                         # set to drawing mode
                         ttr.run_trajectory(self.robot, f"READY_to_DRAWING_MODE")
                         # move to the correct mode 
@@ -211,6 +213,8 @@ class TicTacToeGame:
                         ttr.run_trajectory(self.robot, f"MODE_{robot_move_traj}_to_DRAWING_MODE")
                         # move from the drawing mode to READY mode
                         ttr.run_trajectory(self.robot, f"DRAWING_MODE_to_READY")
+                        # set to camera mode again
+                        ttr.run_trajectory(self.robot, f"READY_to_CAMERA_MODE")
 
                 # ASSUME ROBOT IS X
                 # if self.robot_player == O:
@@ -307,6 +311,7 @@ class TicTacToeGame:
             if self.board[i] == self.board[j] == self.board[k] != EMPTY:
                 winner = self.board[i]
 
+                ttr.run_trajectory(self.robot, f"CAMERA_MODE_to_READY")
                 # set to drawing mode
                 ttr.run_trajectory(self.robot, f"READY_to_DRAWING_MODE")
                 # move to the correct mode 
@@ -317,6 +322,7 @@ class TicTacToeGame:
                 ttr.run_trajectory(self.robot, f"{strike_type}_{strike_mode}_to_DRAWING_MODE")
                 # move from the drawing mode to READY mode
                 ttr.run_trajectory(self.robot, f"DRAWING_MODE_to_READY")
+                ttr.run_trajectory(self.robot, f"READY_to_CAMERA_MODE")
 
         return winner
 

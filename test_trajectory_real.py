@@ -100,6 +100,9 @@ def set_to_ready_position(robot, rtb_model):
     q_target = rtb_model.qr
     joint_trajectory(robot, q_target)
 
+    # set to camera position
+    run_trajectory(robot, "READY_to_CAMERA_MODE")
+
 
 
 if __name__ == "__main__":
@@ -127,7 +130,6 @@ if __name__ == "__main__":
         # draw the board: READY to DRAWING THE BOARD to READY (because it returns back)
         factors=(0.02, 0.01, 0.05)
 
-
         make_trajectories_and_run(
             robot,
             [targets.board],
@@ -141,7 +143,7 @@ if __name__ == "__main__":
         q_target = targets_joint.DRAWING_MODE
         joint_trajectory(robot, q_target, "READY_to_DRAWING_MODE", save=True)
 
-        # Horizontal strikes
+        # # Horizontal strikes
         for idx, mode in zip([9, 6, 3], [targets.drawing_mode_9, targets.drawing_mode_6, targets.drawing_mode_3]):
             make_trajectories_and_run(
                 robot,
@@ -234,6 +236,14 @@ if __name__ == "__main__":
     # When done, return to the ready position
     q_target = targets_joint.READY
     joint_trajectory(robot, q_target, "DRAWING_MODE_to_READY", save=True)
+
+    # go to CAMERA_MODE from READY
+    q_target = targets_joint.CAMERA_MODE
+    joint_trajectory(robot, q_target, "READY_to_CAMERA_MODE", save=True)
+    
+    # go to READY from CAMERA_MODE
+    q_target = targets_joint.READY
+    joint_trajectory(robot, q_target, "CAMERA_MODE_to_READY", save=True)
 
 
     robot.stop() # Makes sure render thread ends

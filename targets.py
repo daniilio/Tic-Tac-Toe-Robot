@@ -5,7 +5,7 @@ from spatialmath import SE3
 import numpy as np
 
 descent = 0.365
-near = 0.145
+near = 0.13
 # descent_near = 1 - near
 side_length = 0.18
 
