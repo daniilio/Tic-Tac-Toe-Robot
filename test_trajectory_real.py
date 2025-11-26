@@ -134,10 +134,12 @@ if __name__ == "__main__":
             robot,
             [targets.board],
             [factors],
-            "READY_to_BOARD_to_READY",
+            "READY_to_BOARD",
             save=True
         )
 
+        q_target = targets_joint.READY
+        joint_trajectory(robot, q_target, "BOARD_to_READY", save=True)
 
         # Go from READY to DRAWING_MODE first
         q_target = targets_joint.DRAWING_MODE

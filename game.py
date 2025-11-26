@@ -6,7 +6,7 @@ import time
 # change test_trajectory_real to test_trajectory_sim for simulation mode
 import test_trajectory_real as ttr
 #import test_trajectory_sim as ttr
-
+import targets_joint
 
 X = 1
 O = 2
@@ -29,8 +29,6 @@ class TicTacToeGame:
 
         if robot_playing:
             self.robot, self.rtb_model = ttr.new_robot()
-            # set the robot to READY position
-            ttr.set_to_ready_position(self.robot, self.rtb_model)
         else:
             self.robot = None
             self.rtb_model = None
@@ -204,29 +202,22 @@ class TicTacToeGame:
                         # TODO: check the indexing here
                         robot_move_traj = robot_move + 1  # different indexing from trajectory generation
 
-                        # set to READY mode
-                        print("Moving to READY mode")
-                        ttr.run_trajectory(self.robot, f"CAMERA_MODE_to_READY")
+                        # mode to drawing mode
                         print("Moving to DRAWING mode")
-                        # set to drawing mode
-                        ttr.run_trajectory(self.robot, f"READY_to_DRAWING_MODE")
-                        # move to the correct mode 
-                        print("Moving to GRID SLOT")
-                        ttr.run_trajectory(self.robot, f"DRAWING_MODE_to_MODE_{robot_move_traj}")
-                        # draw the cross
-                        print("Moving to X")
-                        ttr.run_trajectory(self.robot, f"MODE_{robot_move_traj}_to_CROSS_{robot_move_traj}_to_MODE_{robot_move_traj}")
-                        # move back to drawing mode
-                        print("Moving to DRAWING MODE")
-                        ttr.run_trajectory(self.robot, f"MODE_{robot_move_traj}_to_DRAWING_MODE")
-                        # move from the drawing mode to READY mode
-                        print("Moving to READY mode")
-                        ttr.run_trajectory(self.robot, f"DRAWING_MODE_to_READY")
-                        # set to camera mode again
-                        print("Moving to CAMERA mode")
-                        ttr.run_trajectory(self.robot, f"READY_to_CAMERA_MODE")
+                        ttr.joint_trajectory(self.robot, targets_joint.DRAWING_MODE)
 
-                        current_joint_pos =  self.robot.get_current_joint_positions()
+                        # move to the correct mode 
+                        print("Moving from DRAWING -> GRID SLOT")
+                        ttr.run_trajectory(self.robot, f"DRAWING_MODE_to_MODE_{robot_move_traj}")
+
+                        # draw the cross
+                        print("Drawing X on GRID SLOT")
+                        ttr.run_trajectory(self.robot, f"MODE_{robot_move_traj}_to_CROSS_{robot_move_traj}_to_MODE_{robot_move_traj}")
+                        
+                        # move to camera mode
+                        ttr.joint_trajectory(self.robot, targets_joint.CAMERA_MODE)
+
+                        current_joint_pos =  self.rtb_model.q
                         print(f"Back to camera mode. Current joint angles: {current_joint_pos}")
 
                 # ASSUME ROBOT IS X
@@ -325,18 +316,18 @@ class TicTacToeGame:
             if self.board[i] == self.board[j] == self.board[k] != EMPTY:
                 winner = self.board[i]
 
-                ttr.run_trajectory(self.robot, f"CAMERA_MODE_to_READY")
                 # set to drawing mode
-                ttr.run_trajectory(self.robot, f"READY_to_DRAWING_MODE")
+                ttr.joint_trajectory(self.robot, targets_joint.DRAWING_MODE)
+
                 # move to the correct mode 
                 ttr.run_trajectory(self.robot, f"DRAWING_MODE_to_MODE_{strike_mode}")
+
                 # draw the strike
                 ttr.run_trajectory(self.robot, f"MODE_{strike_mode}_to_{strike_type}_{strike_mode}")
-                # move back to drawing mode
-                ttr.run_trajectory(self.robot, f"{strike_type}_{strike_mode}_to_DRAWING_MODE")
-                # move from the drawing mode to READY mode
-                ttr.run_trajectory(self.robot, f"DRAWING_MODE_to_READY")
-                ttr.run_trajectory(self.robot, f"READY_to_CAMERA_MODE")
+                
+                # Game is done, go to robot ready pose for now
+                ttr.joint_trajectory(self.robot, targets_joint.READY)
+
 
         return winner
 
