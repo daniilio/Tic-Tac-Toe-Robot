@@ -100,8 +100,8 @@ def set_to_ready_position(robot, rtb_model):
     q_target = rtb_model.qr
     joint_trajectory(robot, q_target)
 
-    # set to camera position
-    run_trajectory(robot, "READY_to_CAMERA_MODE")
+    # # set to camera position
+    # run_trajectory(robot, "READY_to_CAMERA_MODE")
 
 
 

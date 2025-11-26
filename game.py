@@ -160,8 +160,8 @@ class TicTacToeGame:
                 self.print_board()
                 user_move = -1
                 if use_camera:
-                    user_move = self.get_user_move5()
                     input("Press the enter key to confirm your move")
+                    user_move = self.get_user_move5()
                 if user_move == -1:
                     print("Cannot detect a correct move from camera.")
 
@@ -195,26 +195,39 @@ class TicTacToeGame:
                 self.board[user_move] = self.human_player
 
             elif self.next_player == self.robot_player:
+                
                 robot_move = self.get_random_move()
+                current_joint_pos =  self.robot.get_current_joint_positions()
+                print(f"Robot's turn. Moving to {robot_move}, current joint position: {current_joint_pos}")
                 if self.robot_player == X:
                     if self.robot is not None:
                         # TODO: check the indexing here
                         robot_move_traj = robot_move + 1  # different indexing from trajectory generation
 
                         # set to READY mode
+                        print("Moving to READY mode")
                         ttr.run_trajectory(self.robot, f"CAMERA_MODE_to_READY")
+                        print("Moving to DRAWING mode")
                         # set to drawing mode
                         ttr.run_trajectory(self.robot, f"READY_to_DRAWING_MODE")
                         # move to the correct mode 
+                        print("Moving to GRID SLOT")
                         ttr.run_trajectory(self.robot, f"DRAWING_MODE_to_MODE_{robot_move_traj}")
                         # draw the cross
+                        print("Moving to X")
                         ttr.run_trajectory(self.robot, f"MODE_{robot_move_traj}_to_CROSS_{robot_move_traj}_to_MODE_{robot_move_traj}")
                         # move back to drawing mode
+                        print("Moving to DRAWING MODE")
                         ttr.run_trajectory(self.robot, f"MODE_{robot_move_traj}_to_DRAWING_MODE")
                         # move from the drawing mode to READY mode
+                        print("Moving to READY mode")
                         ttr.run_trajectory(self.robot, f"DRAWING_MODE_to_READY")
                         # set to camera mode again
+                        print("Moving to CAMERA mode")
                         ttr.run_trajectory(self.robot, f"READY_to_CAMERA_MODE")
+
+                        current_joint_pos =  self.robot.get_current_joint_positions()
+                        print(f"Back to camera mode. Current joint angles: {current_joint_pos}")
 
                 # ASSUME ROBOT IS X
                 # if self.robot_player == O:
@@ -222,7 +235,7 @@ class TicTacToeGame:
                 #         self.robot.drawO(robot_move)
                 self.board[robot_move] = self.robot_player
                 print("Robot makes move: ", robot_move)
-                if self.is_game_over():
+                if self.is_game_over(): 
                     break
             self.next_player = 3 - self.next_player
         
@@ -235,6 +248,7 @@ class TicTacToeGame:
         self.board = [EMPTY] * 9
         if self.robot is not None:
             ttr.run_trajectory(self.robot, "READY_to_BOARD_to_READY")
+            ttr.run_trajectory(self.robot, "READY_to_CAMERA_MODE")
 
         print("Human Player is O and Robot Player is X")
 
