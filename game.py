@@ -93,17 +93,15 @@ class TicTacToeGame:
             print(f"Error: Expected 9 squares, but got {len(squares)}.")
             return -1
 
-        filled_cells = self.board_reader.detect_non_empty_squares(frame, squares)
-        print("Camera feed detected cells " + ", ".join([str(c) for c in filled_cells]) + " as filled.")
+        ignore_squares = []
+        for i in range(9):
+            if self.board[i] != EMPTY:
+                ignore_squares.append(i)
+        changed_cell = self.board_reader.detect_single_square_change(frame, squares, ignore_squares)
+        print(f"Camera feed detected a change on cell {str(changed_cell)}.")
 
         new_board = self.board.copy()
-        for filled_cell_i in filled_cells:
-            curr_val = self.board[filled_cell_i]
-            if curr_val != 3: # I don't know why BoardReader.Marks.Empty is not working here
-                # We don't care if the cell's prev value is not empty, because we assume the prev value is true
-                continue
-            # Human only plays O, if the cell was previously empty and now it is filled, it must be O
-            new_board[filled_cell_i] = 2 # I don't know why BoardReader.Marks.O is not working here
+        new_board[changed_cell] = 2 # I don't know why BoardReader.Marks.O doesn't work
 
         print("Old board:")
         self.print_board()
@@ -117,17 +115,8 @@ class TicTacToeGame:
 
         # ---------- Compare new_board with self.board ----------
         print(self.board, new_board)
-        diff_indices = []
-        for i, (old, new) in enumerate(zip(self.board, new_board)):
-            if old != new:
-                diff_indices.append(i)
 
-        # We expect exactly one changed cell
-        if len(diff_indices) != 1:
-            print(f"Invalid move: expected exactly 1 changed cell, got {len(diff_indices)}.")
-            return -1
-
-        move_idx = diff_indices[0]
+        move_idx = changed_cell
         old_val = self.board[move_idx]
         new_val = new_board[move_idx]
 
@@ -147,11 +136,11 @@ class TicTacToeGame:
         print(f"User move detected at index: {move_idx}")
         return move_idx
 
-    def start_game(self, use_camera=True):
+    def start_game(self, use_camera=True, state=None, next_player=X):
         """
         Start a new game.
         """
-        self.initialize_game()
+        self.initialize_game(state, next_player)
         while not self.is_game_over():
             if self.next_player == self.human_player:
                 print("======The current board status is:======")
@@ -232,12 +221,16 @@ class TicTacToeGame:
         
         self.cap.release()
 
-    def initialize_game(self):
+    def initialize_game(self, state, next_player):
         """
         Initialize a new game.
         """
-        self.board = [EMPTY] * 9
-        if self.robot is not None:
+        if state is not None:
+            self.board = state
+        else:
+            self.board = [EMPTY] * 9
+        self.next_player = next_player
+        if self.robot is not None and self.board == [EMPTY] * 9:
             ttr.run_trajectory(self.robot, "READY_to_BOARD_to_READY")
             ttr.run_trajectory(self.robot, "READY_to_CAMERA_MODE")
 
@@ -360,5 +353,5 @@ class TicTacToeGame:
 if __name__ == "__main__":
     game = TicTacToeGame(robot_playing=True)
     #game.start_game(use_camera=False)
-    game.start_game(use_camera=True)
+    game.start_game(use_camera=True, state=[EMPTY]*9, next_player=X)
 

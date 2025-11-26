@@ -34,12 +34,12 @@ class BoardReader:
         O = 2
         EMPTY = 3
 
+    def __init__(self):
+        self.previous_fill_ratios = [0.0] * 9
+
     def read_board(self, frame: cv2.typing.MatLike):
         squares = self.find_squares(frame)
-        self.visualize_squares(frame, squares)
-        marks = self.detect_non_empty_squares(frame, squares)
-        # print marks as a grid
-        print(marks)
+        self.detect_single_square_change(frame, squares, ignore_squares=[])
 
     def print_board(self, marks):
         if not marks:
@@ -153,53 +153,12 @@ class BoardReader:
                 best_start_index = i
         return best_start_index
 
-    def detect_marks(self, frame: cv2.typing.MatLike, squares):
-        gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-        _, thresh = cv2.threshold(gray, 127, 255, 1)
-
-        marks = []
-        for sq in squares:
-            mask = np.zeros((thresh.shape), dtype=np.uint8)
-            cv2.fillPoly(mask, [sq], 255)
-            cell = cv2.bitwise_and(thresh, thresh, mask=mask)
-            x, y, w, h = cv2.boundingRect(sq)
-            w = int(0.9 * w)
-            h = int(0.9 * h)
-            cell = cell[y : y + h, x : x + w]
-
-            non_zero_count = cv2.countNonZero(cell)
-            total_pixels = cell.size
-            fill_ratio = non_zero_count / total_pixels
-            if fill_ratio < 0.015:
-                marks.append(self.Marks.EMPTY)
-            else:
-                # Run a hough circle detection to see if there's an O
-                circles = cv2.HoughCircles(
-                    cell,
-                    cv2.HOUGH_GRADIENT,
-                    dp=1,
-                    minDist=20,
-                    param1=50,
-                    param2=15,
-                    minRadius=15,
-                )
-                if circles is not None:
-                    marks.append(self.Marks.O)
-                    # draw detected circles for visualization
-                    circles = np.uint16(np.around(circles))
-                    for i in circles[0, :]:
-                        cv2.circle(cell, (i[0], i[1]), i[2], (0, 255, 0), 2)
-                else:
-                    marks.append(self.Marks.X)
-
-        return marks
-
-    def detect_non_empty_squares(self, frame: cv2.typing.MatLike, squares):
+    def get_square_fill_ratios(self, frame: cv2.typing.MatLike, squares):
         gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
         blurred = cv2.GaussianBlur(gray, (9, 9), 0)
         _, thresh = cv2.threshold(blurred, 127, 255, 1)
 
-        non_empty_squares = []
+        fill_ratios = []
         for i, sq in enumerate(squares):
             mask = np.zeros((thresh.shape), dtype=np.uint8)
             cv2.fillPoly(mask, [sq], 255)
@@ -213,10 +172,20 @@ class BoardReader:
             total_pixels = cell.size
             fill_ratio = non_zero_count / total_pixels
             print(f"Square {i}: Fill Ratio = {fill_ratio:.4f}")
-            if fill_ratio >= 0.04:
-                non_empty_squares.append(i)
+            fill_ratios.append(fill_ratio)
 
-        return non_empty_squares
+        return fill_ratios
+    
+    def detect_single_square_change(self, frame: cv2.typing.MatLike, squares, ignore_squares):
+        current_fill_ratios = self.get_square_fill_ratios(frame, squares)
+        changes = [0.0] * len(current_fill_ratios)
+        for i in range(len(current_fill_ratios)):
+            if i in ignore_squares:
+                continue
+            changes[i] = abs(current_fill_ratios[i] - self.previous_fill_ratios[i])
+        self.previous_fill_ratios = current_fill_ratios
+        changes = sorted(enumerate(changes), key=lambda x: x[1], reverse=True)
+        return changes[0][0]
 
 
 class FrameSource(Enum):
