@@ -86,6 +86,7 @@ def run_on_robot(robot: csc376_bind_franky.FrankaJointTrajectoryController, q_tr
         robot.run_joint_trajectory(q_traj, dt)
 
 
+
 def run_trajectory(robot, file_name):
     # Find the trajectories from the files given
     with open(f"trajectories/{file_name}.pkl", "rb") as f:
@@ -97,7 +98,7 @@ def run_trajectory(robot, file_name):
 
 # run upon initialization!
 def set_to_ready_position(robot, rtb_model):
-    q_target = rtb_model.qr
+    q_target = targets_joint.READY
     joint_trajectory(robot, q_target)
 
     # # set to camera position
@@ -109,8 +110,7 @@ if __name__ == "__main__":
     robot, rtb_model = new_robot()
 
     # First, we need to be in the ready position that the saved trajectories expect
-    q_target = rtb_model.qr
-    joint_trajectory(robot, q_target)
+    set_to_ready_position(robot, rtb_model)
 
     if (len(sys.argv) > 1):
         # Try to load trajectories

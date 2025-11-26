@@ -14,7 +14,7 @@ np.set_printoptions(precision=4, suppress=True,)
 def new_robot():
     panda_rtb_model = rtb.models.Panda()
     
-    q_start = panda_rtb_model.qr
+    q_start = targets_joint.READY
     robot = RtbVisualizer(panda_rtb_model, q_start)
 
     return robot, panda_rtb_model
@@ -95,7 +95,7 @@ def run_trajectory(robot, file_name):
 
 # run upon initialization!
 def set_to_ready_position(robot, rtb_model):
-    q_target = rtb_model.qr
+    q_target = targets_joint.READY
     joint_trajectory(robot, q_target)
 
 
