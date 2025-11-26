@@ -125,7 +125,7 @@ if __name__ == "__main__":
         # - From drawing mode, go back to ready position
 
         # draw the board: READY to DRAWING THE BOARD to READY (because it returns back)
-        factors=(0.02, 0.01, 0.05)
+        factors=(0.2, 0.1, 0.5)
 
         make_trajectories_and_run(
             robot,
@@ -135,6 +135,7 @@ if __name__ == "__main__":
             save=True
         )
 
+        set_to_ready_position(robot, rtb_model)
 
         # Go from READY to DRAWING_MODE first
         q_target = targets_joint.DRAWING_MODE
