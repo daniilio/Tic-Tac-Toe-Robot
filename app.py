@@ -170,6 +170,8 @@ class BoardReader:
             x, y, w, h = cv2.boundingRect(sq)
             w = int(0.95 * w)
             h = int(0.95 * h)
+            x += int(0.025 * w)
+            y += int(0.025 * h)
             cell = cell[y : y + h, x : x + w]
 
             non_zero_count = cv2.countNonZero(cell)
